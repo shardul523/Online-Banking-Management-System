@@ -3,15 +3,12 @@
 #include <stdlib.h>
 #include <arpa/inet.h>
 
-#include "globals.h"
+#include "../globals.h"
+#include "customer_client.c"
+#include "employee_client.c"
+#include "admin_client.c"
 
 int login(int socket_fd, Token *user, char *username, char *password, UserType type);
-void display_customer_menu();
-
-void display_employee_menu();
-void display_manager_menu();
-
-void display_admin_menu();
 
 int connect_server()
 {
@@ -67,7 +64,8 @@ int main()
     case CUSTOMER:
         if (login(socket_fd, user, username, password, CUSTOMER) < 0)
             break;
-        display_customer_menu();
+        if (user->user_id != -1)
+            customer_handler(socket_fd, user);
         break;
     case EMPLOYEE:
         login(socket_fd, user, username, password, EMPLOYEE);
@@ -84,7 +82,6 @@ int main()
     close(socket_fd);
 }
 
-// CUSTOMER FUNCTIONS
 
 int login(int socket_fd, Token *user, char *username, char *password, UserType type)
 {
@@ -113,56 +110,4 @@ int login(int socket_fd, Token *user, char *username, char *password, UserType t
         printf("%s\n", login_res.body);
 
     return 0;
-}
-
-void display_customer_menu()
-{
-    printf("1. View Account Balance\n");
-    printf("2. Withdraw Money\n");
-    printf("3. Deposit Money\n");
-    printf("4. Transfer Funds\n");
-    printf("5. View Transaction History\n");
-    printf("6. Apply for a Loan\n");
-    printf("7. Adding Feedback\n");
-    printf("8. Change Password\n");
-    printf("9. Logout\n");
-}
-
-int employee_login(char *username, char *password)
-{
-    return 0;
-}
-
-void display_employee_menu()
-{
-    printf("1. Add New Customer\n");
-    printf("2. Modify Customer Details\n");
-    printf("3. Approve/Reject Loans\n");
-    printf("4. View Assigned Loan Applications\n");
-    printf("5. View Customer Transactions\n");
-    printf("6. Change Password\n");
-    printf("7. Logout\n");
-}
-
-void display_manager_menu()
-{
-    printf("1. Activate/Deactivate Customer Accounts\n");
-    printf("2. Assign Loan Application Processes to Employees\n");
-    printf("3. Review Customer Feedback\n");
-    printf("4. Change Password\n");
-    printf("5. Logout\n");
-}
-
-Admin *admin_login(char *username, char *password)
-{
-    return 0;
-}
-
-void display_admin_menu()
-{
-    printf("1. Add New Bank Employee\n");
-    printf("2. Modify Customer/Employee Details\n");
-    printf("3. Manage User Roles\n");
-    printf("4. Change Password\n");
-    printf("5. Logout\n");
 }

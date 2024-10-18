@@ -3,7 +3,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "globals.h"
+#include "../globals.h"
 
 void login_employee(char *username, char *password, Response *res)
 {

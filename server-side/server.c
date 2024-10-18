@@ -4,8 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "globals.h"
-#include "customer.c"
+#include "../globals.h"
+#include "customer_server.c"
 #include "employees.c"
 #include "admin.c"
 
@@ -81,7 +81,8 @@ void handle_customer_requests(int sock_fd, Request *req)
 
     printf("User Type: %d\n", req->user.user_type);
     printf("Argument 0: %s\n", argv[0]);
-    printf("Argument 1: %s\n", argv[1]);
+
+    res.user = req->user;
 
     switch (req->user.user_type)
     {
@@ -96,6 +97,13 @@ void handle_customer_requests(int sock_fd, Request *req)
             login_admin(argv[2], argv[3], &res);
         else
             snprintf(res.body, RES_BODY_SIZE - 1, "\nINVALID REQUEST\n");
+        break;
+    
+    case CUSTOMER:
+        if (strcmp(argv[0], "GET_BALANCE") == 0) {
+            printf("Getting Customer Balance\n");
+            view_customer_balance(&req->user, &res);
+        }
         break;
     default:
         snprintf(res.body, RES_BODY_SIZE - 1, "\nINVALID REQUEST\n");
@@ -130,7 +138,7 @@ int main()
     Response res;
 
     // Receive and respond to multiple messages
-    for (int i = 0; i < 1; i++)
+    for (int i = 0; i < 10; i++)
     {
         // Receive a message
         if (read(new_socket, &req, sizeof(Request)) > 0)

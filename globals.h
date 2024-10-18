@@ -1,9 +1,9 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
-#define CUSTOMERS_FILE "data/CUSTOMERS_DB"
-#define EMPLOYEES_FILE "data/EMPLOYEES_DB"
-#define ADMIN_FILE "data/ADMIN_DB"
+#define CUSTOMERS_FILE "../data/CUSTOMERS_DB"
+#define EMPLOYEES_FILE "../data/EMPLOYEES_DB"
+#define ADMIN_FILE "../data/ADMIN_DB"
 #define USERNAME_SIZE 30
 #define PASSWORD_SIZE 15
 #define FEEDBACK_SIZE 300
