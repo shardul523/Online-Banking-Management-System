@@ -5,7 +5,7 @@
 
 #include "globals.h"
 
-Customer *customer_login(int socket_fd, char *username, char *password);
+int customer_login(int socket_fd, Token* user, char *username, char *password);
 void display_customer_menu();
 
 Employee *employee_login(char *username, char *password);
@@ -27,220 +27,21 @@ TOKEN -
 2. USER ID
  */
 
-// #include <stdio.h>
-
-// #include "client_admin.c"
-// #include "client_customer.c"
-// #include "client_employee.c"
-
-// int main()
-// {
-//     int user_type;
-//     char username[USERNAME_SIZE], password[PASSWORD_SIZE];
-
-//     printf("LOGIN\n");
-//     printf("1. CUSTOMER\n");
-//     printf("2. EMPLOYEE\n");
-//     printf("3. ADMIN\n");
-
-//     printf("Enter user type: ");
-//     scanf("%d", &user_type);
-
-//     printf("Username: ");
-//     scanf("%s", username);
-//     printf("Password: ");
-//     scanf("%s", password);
-
-//     switch (user_type)
-//     {
-//     case CUSTOMER:
-//         customer_login(username, password);
-//         display_customer_menu();
-//         break;
-//     case EMPLOYEE:
-//         employee_login(username, password);
-//         display_employee_menu();
-//         break;
-//     case ADMIN:
-//         admin_login(username, password);
-//         display_admin_menu();
-//         break;
-//     default:
-//         break;
-//     }
-// }
-
-// typedef struct
-// {
-//     long long acc_no;
-//     char username[30];
-//     char password[15];
-// } Customer;
-
-// void init_db()
-// {
-//     int fd = open(CUSTOMERS_FILE, O_WRONLY);
-//     Customer customers[] = {
-//         {1, "shardul05", "test1234"},
-//         {2, "sanal", "test1234"},
-//         {3, "alka158", "test1234"}};
-//     write(fd, customers, sizeof(customers));
-//     close(fd);
-// }
-
-// Customer *get_customer(char *user)
-// {
-//     int fd = open(CUSTOMERS_FILE, O_RDONLY);
-
-//     Customer *cust = (Customer *)malloc(sizeof(Customer));
-
-//     while (read(fd, cust, sizeof(Customer)) > 0)
-//     {
-//         if (strcmp(user, cust->username) == 0)
-//             return cust;
-//     }
-
-//     free(cust);
-
-//     cust = NULL;
-
-//     return cust;
-// }
-
-// int main()
-// {
-//     init_db();
-//     char user[30], pass[15];
-
-//     printf("Username: ");
-//     scanf("%s", user);
-
-//     printf("Password: ");
-//     scanf("%s", pass);
-
-//     Customer *cust = get_customer(user);
-
-//     if (cust == NULL)
-//     {
-//         perror("No such user exists");
-//         exit(EXIT_FAILURE);
-//     }
-
-//     if (strcmp(cust->password, pass) != 0)
-//     {
-//         perror("Invalid Username / Password");
-//         exit(EXIT_FAILURE);
-//     }
-
-//     switch (cust->role)
-//     {
-//     case USER:
-//         printf("Hello User\n");
-//         break;
-//     case EMPLOYEE:
-//         printf("Hello Employee\n");
-//         break;
-//     case MANAGER:
-//         printf("Hello Manager\n");
-//         break;
-//     default:
-//         printf("Invalid User\n");
-//     }
-
-//     free(cust);
-
-//     cust = NULL;
-// }
-
-// client.c
-// #include <stdio.h>
-// #include <stdlib.h>
-// #include <string.h>
-// #include <unistd.h>
-// #include <arpa/inet.h>
-
-// // Define the structured message
-// struct Message
-// {
-//     int id;
-//     char text[256];
-// };
-
-// #define PORT 8080
-// #define SERVER_IP "127.0.0.1"
-
-// int main()
-// {
-//     int sock = 0;
-//     struct sockaddr_in serv_addr;
-
-//     // Create a socket
-//     if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
-//     {
-//         perror("Socket creation error");
-//         exit(EXIT_FAILURE);
-//     }
-
-//     // Configure server address
-//     serv_addr.sin_family = AF_INET;
-//     serv_addr.sin_port = htons(PORT);
-
-//     // Convert IP address from text to binary form
-//     if (inet_pton(AF_INET, SERVER_IP, &serv_addr.sin_addr) <= 0)
-//     {
-//         perror("Invalid address/ Address not supported");
-//         close(sock);
-//         exit(EXIT_FAILURE);
-//     }
-
-//     // Connect to the server
-//     if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
-//     {
-//         perror("Connection failed");
-//         close(sock);
-//         exit(EXIT_FAILURE);
-//     }
-
-//     struct Message msg;
-
-//     // Send and receive multiple messages
-//     for (int i = 0; i < 3; i++)
-//     {
-//         // Prepare the message
-//         msg.id = i;
-//         snprintf(msg.text, sizeof(msg.text), "Client Message %d", i);
-
-//         // Send the message to the server
-//         send(sock, &msg, sizeof(msg), 0);
-
-//         // Receive the modified message from the server
-//         if (read(sock, &msg, sizeof(msg)) > 0)
-//         {
-//             printf("Received: [ID=%d] %s\n", msg.id, msg.text);
-//         }
-//     }
-
-//     close(sock);
-//     printf("Client terminated.\n");
-
-//     return 0;
-// }
-
 int connect_server()
 {
     struct sockaddr_in server_address;
     int socket_fd;
 
-    socket_fd = socket(AF_UNIX, SOCK_STREAM, 0);
+    socket_fd = socket(AF_INET, SOCK_STREAM, 0);
 
     if (socket_fd < 0)
         return -1;
 
     server_address.sin_addr.s_addr = INADDR_ANY;
-    server_address.sin_family = AF_UNIX;
-    server_address.sin_port = SERVER_PORT;
+    server_address.sin_family = AF_INET;
+    server_address.sin_port = htons(SERVER_PORT);
 
-    if (connect(socket_fd, &server_address, sizeof(server_address)) < 0)
+    if (connect(socket_fd, (struct sockaddr *) &server_address, sizeof(server_address)) < 0)
         return -1;
 
     return socket_fd;
@@ -258,6 +59,10 @@ int main()
 
     int user_type = 0;
     char username[USERNAME_SIZE], password[PASSWORD_SIZE];
+    Token* user = (Token*) malloc(sizeof(Token));
+
+    user->user_id = -1;
+    user->user_type = NONE;
 
     printf("LOGIN\n");
     printf("1. CUSTOMER\n");
@@ -275,7 +80,8 @@ int main()
     switch (user_type)
     {
     case CUSTOMER:
-        customer_login(socket_fd, username, password);
+        if (customer_login(socket_fd, user, username, password) < 0)
+            break;
         display_customer_menu();
         break;
     case EMPLOYEE:
@@ -289,12 +95,35 @@ int main()
     default:
         break;
     }
+
+    close(socket_fd);
 }
 
 // CUSTOMER FUNCTIONS
 
-Customer *customer_login(int socket_fd, char *username, char *password)
+int customer_login(int socket_fd, Token *user, char *username, char *password)
 {
+    Request login_req;
+    Response login_res;
+    Token *token = (Token*) malloc(sizeof(Token));
+
+    login_req.argc = 3;
+    login_req.user = *user;
+
+    snprintf(login_req.arguments, MAX_ARGUMENT_SIZE - 1, "LOGIN_CUSTOMER %s %s", username, password);
+
+    if (send(socket_fd, &login_req, sizeof(Request), 0) < 0)
+        return -1;
+
+    if (read(socket_fd, &login_res, sizeof(Response)) < 0) 
+        return -1;
+
+    *user = login_res.user;
+
+    if (user->user_type != NONE)
+    printf("%s\n", login_res.body);
+
+    return 0;
 }
 
 void display_customer_menu()

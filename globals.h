@@ -1,19 +1,20 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
-#define CUSTOMERS_FILE "customers_db"
-#define EMPLOYEES_FILE "employees_db"
+#define CUSTOMERS_FILE "data/CUSTOMERS_DB"
+#define EMPLOYEES_FILE "EMPLOYEES_DB"
 #define ADMIN_FILE "admin_db"
 #define USERNAME_SIZE 30
 #define PASSWORD_SIZE 15
 #define FEEDBACK_SIZE 300
+#define RES_BODY_SIZE 1024
 #define MAX_ARGUMENT_SIZE 100
 #define SERVER_PORT 8080
 
 typedef enum
 {
-    True,
-    False
+    False,
+    True
 } Bool;
 
 typedef enum
@@ -32,7 +33,6 @@ typedef struct
 
 typedef struct
 {
-    int action_id;
     int argc;
     char arguments[MAX_ARGUMENT_SIZE];
     Token user;
@@ -40,19 +40,17 @@ typedef struct
 
 typedef struct
 {
-    Customer c;
-    Employee e;
-    Admin m;
     Token user;
+    char body[RES_BODY_SIZE];
 } Response;
 
 typedef struct
 {
-    char username[USERNAME_SIZE];
-    char password[PASSWORD_SIZE];
     int customer_id;
     double balance;
-    char feedback[FEEDBACK_SIZE];
+    char username[USERNAME_SIZE];
+    char password[PASSWORD_SIZE];
+    // char feedback[FEEDBACK_SIZE];
 } Customer;
 
 typedef enum
@@ -63,10 +61,10 @@ typedef enum
 
 typedef struct
 {
+    Role role;
+    int employee_id;
     char username[USERNAME_SIZE];
     char password[PASSWORD_SIZE];
-    int employee_id;
-    Role role;
 } Employee;
 
 typedef struct
