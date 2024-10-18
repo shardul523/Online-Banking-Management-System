@@ -5,27 +5,13 @@
 
 #include "globals.h"
 
-int customer_login(int socket_fd, Token* user, char *username, char *password);
+int login(int socket_fd, Token *user, char *username, char *password, UserType type);
 void display_customer_menu();
 
-Employee *employee_login(char *username, char *password);
 void display_employee_menu();
 void display_manager_menu();
 
-Admin *admin_login(char *username, char *password);
 void display_admin_menu();
-/*
-METHOD - GET
-
-ACTION -
-TYPE -
-ARGUEMENTS -
-
-
-TOKEN -
-1. USER TYPE
-2. USER ID
- */
 
 int connect_server()
 {
@@ -41,7 +27,7 @@ int connect_server()
     server_address.sin_family = AF_INET;
     server_address.sin_port = htons(SERVER_PORT);
 
-    if (connect(socket_fd, (struct sockaddr *) &server_address, sizeof(server_address)) < 0)
+    if (connect(socket_fd, (struct sockaddr *)&server_address, sizeof(server_address)) < 0)
         return -1;
 
     return socket_fd;
@@ -57,12 +43,11 @@ int main()
         exit(EXIT_FAILURE);
     }
 
-    int user_type = 0;
     char username[USERNAME_SIZE], password[PASSWORD_SIZE];
-    Token* user = (Token*) malloc(sizeof(Token));
+    Token *user = (Token *)malloc(sizeof(Token));
+    int user_type;
 
     user->user_id = -1;
-    user->user_type = NONE;
 
     printf("LOGIN\n");
     printf("1. CUSTOMER\n");
@@ -80,16 +65,16 @@ int main()
     switch (user_type)
     {
     case CUSTOMER:
-        if (customer_login(socket_fd, user, username, password) < 0)
+        if (login(socket_fd, user, username, password, CUSTOMER) < 0)
             break;
         display_customer_menu();
         break;
     case EMPLOYEE:
-        employee_login(username, password);
+        login(socket_fd, user, username, password, EMPLOYEE);
         display_employee_menu();
         break;
     case ADMIN:
-        admin_login(username, password);
+        login(socket_fd, user, username, password, ADMIN);
         display_admin_menu();
         break;
     default:
@@ -101,27 +86,31 @@ int main()
 
 // CUSTOMER FUNCTIONS
 
-int customer_login(int socket_fd, Token *user, char *username, char *password)
+int login(int socket_fd, Token *user, char *username, char *password, UserType type)
 {
     Request login_req;
     Response login_res;
-    Token *token = (Token*) malloc(sizeof(Token));
 
-    login_req.argc = 3;
+    login_req.argc = 4;
     login_req.user = *user;
 
-    snprintf(login_req.arguments, MAX_ARGUMENT_SIZE - 1, "LOGIN_CUSTOMER %s %s", username, password);
+    if (type == CUSTOMER)
+        snprintf(login_req.arguments, MAX_ARGUMENT_SIZE - 1, "LOGIN CUSTOMER %s %s", username, password);
+    else if (type == EMPLOYEE)
+        snprintf(login_req.arguments, MAX_ARGUMENT_SIZE - 1, "LOGIN EMPLOYEE %s %s", username, password);
+    else if (type == ADMIN)
+        snprintf(login_req.arguments, MAX_ARGUMENT_SIZE - 1, "LOGIN ADMIN %s %s", username, password);
 
     if (send(socket_fd, &login_req, sizeof(Request), 0) < 0)
         return -1;
 
-    if (read(socket_fd, &login_res, sizeof(Response)) < 0) 
+    if (read(socket_fd, &login_res, sizeof(Response)) < 0)
         return -1;
 
     *user = login_res.user;
 
     if (user->user_type != NONE)
-    printf("%s\n", login_res.body);
+        printf("%s\n", login_res.body);
 
     return 0;
 }
@@ -139,7 +128,7 @@ void display_customer_menu()
     printf("9. Logout\n");
 }
 
-Employee *employee_login(char *username, char *password)
+int employee_login(char *username, char *password)
 {
     return 0;
 }

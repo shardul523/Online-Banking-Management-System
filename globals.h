@@ -2,8 +2,8 @@
 #define GLOBALS_H
 
 #define CUSTOMERS_FILE "data/CUSTOMERS_DB"
-#define EMPLOYEES_FILE "EMPLOYEES_DB"
-#define ADMIN_FILE "admin_db"
+#define EMPLOYEES_FILE "data/EMPLOYEES_DB"
+#define ADMIN_FILE "data/ADMIN_DB"
 #define USERNAME_SIZE 30
 #define PASSWORD_SIZE 15
 #define FEEDBACK_SIZE 300
@@ -29,13 +29,14 @@ typedef struct
 {
     int user_id;
     UserType user_type;
+    char username[USERNAME_SIZE];
 } Token;
 
 typedef struct
 {
     int argc;
-    char arguments[MAX_ARGUMENT_SIZE];
     Token user;
+    char arguments[MAX_ARGUMENT_SIZE];
 } Request;
 
 typedef struct
@@ -69,6 +70,7 @@ typedef struct
 
 typedef struct
 {
+    int admin_id;
     char username[USERNAME_SIZE];
     char password[PASSWORD_SIZE];
 } Admin;
