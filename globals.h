@@ -9,7 +9,7 @@
 #define PASSWORD_SIZE 15
 #define FEEDBACK_SIZE 300
 #define RES_BODY_SIZE 1024
-#define MAX_ARGUMENT_SIZE 100
+#define MAX_ARGUMENT_SIZE 1024
 #define SERVER_PORT 8080
 
 typedef enum

@@ -36,7 +36,7 @@ int view_account_balance(int sock_fd, Token *user)
     return 0;
 }
 
-void withdraw_money(int sock_fd, Token* user)
+void withdraw_money(int sock_fd, Token *user)
 {
     Request req;
     Response res;
@@ -49,14 +49,16 @@ void withdraw_money(int sock_fd, Token* user)
     req.argc = 2;
     snprintf(req.arguments, MAX_ARGUMENT_SIZE - 1, "WITHDRAW %lf", amount);
 
-    if (send(sock_fd, &req, sizeof(Request), 0) < 0) return;
+    if (send(sock_fd, &req, sizeof(Request), 0) < 0)
+        return;
 
-    if (read(sock_fd, &res, sizeof(Response)) < 0) return;
+    if (read(sock_fd, &res, sizeof(Response)) < 0)
+        return;
 
     printf("\n%s\n", res.body);
 }
 
-void deposit_money(int sock_fd, Token* user)
+void deposit_money(int sock_fd, Token *user)
 {
     Request req;
     Response res;
@@ -69,9 +71,36 @@ void deposit_money(int sock_fd, Token* user)
     req.argc = 2;
     snprintf(req.arguments, MAX_ARGUMENT_SIZE - 1, "DEPOSIT %lf", amount);
 
-    if (send(sock_fd, &req, sizeof(Request), 0) < 0) return;
+    if (send(sock_fd, &req, sizeof(Request), 0) < 0)
+        return;
 
-    if (read(sock_fd, &res, sizeof(Response)) < 0) return;
+    if (read(sock_fd, &res, sizeof(Response)) < 0)
+        return;
+
+    printf("\n%s\n", res.body);
+}
+
+void transfer_money(int sock_fd, Token *user)
+{
+    Request req;
+    Response res;
+    char ben_username[USERNAME_SIZE];
+    double amount;
+
+    printf("\nBeneficiary Username: ");
+    scanf("%s", ben_username);
+
+    printf("\nTransfer Amount: ");
+    scanf("%lf", &amount);
+
+    req.argc = 3;
+    req.user = *user;
+    snprintf(req.arguments, MAX_ARGUMENT_SIZE - 1, "TRANSFER %s %lf", ben_username, amount);
+
+    if (send(sock_fd, &req, sizeof(Request), 0) < 0)
+        return;
+    if (read(sock_fd, &res, sizeof(Response)) < 0)
+        return;
 
     printf("\n%s\n", res.body);
 }
@@ -103,7 +132,7 @@ void customer_handler(int sock_fd, Token *user)
             break;
 
         case 4:
-            printf("Transfer funds to another account\n");
+            transfer_money(sock_fd, user);
             break;
 
         case 9:

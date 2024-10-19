@@ -61,4 +61,9 @@ Bool update_record(int cust_c, int emp_c, int adm_c)
     return True;
 }
 
+Bool are_equal(char *str1, char *str2)
+{
+    return strcmp(str1, str2) == 0;
+}
+
 #endif
