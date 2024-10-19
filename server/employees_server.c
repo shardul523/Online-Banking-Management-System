@@ -1,5 +1,6 @@
 #include "common_server.c"
 #include "../globals.h"
+#include "customer_server.c"
 
 void login_employee(char *username, char *password, Response *res)
 {
@@ -84,6 +85,30 @@ void add_new_customer(Response *res, char *username, char *password, double bala
     close(customer_fd);
 }
 
+void modify_customer_details(Response *res, int customer_id, char *field, char *value)
+{
+    Customer cust;
+
+    if (get_customer(customer_id, &cust) == -1)
+    {
+        strcpy(res->body, "Could not get customer details");
+        return;
+    }
+
+    if (strcmp(field, "USERNAME") == 0)
+        strcpy(cust.username, value);
+    else if (strcmp(field, "PASSWORD") == 0)
+        strcpy(cust.password, value);
+
+    if (update_customer(&cust) == -1)
+    {
+        strcpy(res->body, "Could not modify customer details");
+        return;
+    }
+
+    snprintf(res->body, MAX_ARGUMENT_SIZE - 1, "\nCUSTOMER DETAILS MODIFIED\nNEW MODIFIED %s: %s\n", field, value);
+}
+
 void handle_employee_requests(char **argv, Response *res)
 {
     if (strcmp(argv[0], "LOGOUT") == 0)
@@ -93,5 +118,9 @@ void handle_employee_requests(char **argv, Response *res)
     else if (strcmp(argv[0], "ADD_CUSTOMER") == 0)
     {
         add_new_customer(res, argv[1], argv[2], atof(argv[3]));
+    }
+    else if (are_equal(argv[0], "MODIFY"))
+    {
+        modify_customer_details(res, atoi(argv[1]), argv[2], argv[3]);
     }
 }

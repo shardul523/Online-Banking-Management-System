@@ -22,7 +22,6 @@ void display_manager_menu()
 
 // REGULAR EMPLOYEE FUNCTIONS
 
-// ADD_CUSTOMER username password initial_balance
 void add_new_customer(int sock_fd, Token *user)
 {
     Request req;
@@ -59,6 +58,54 @@ void add_new_customer(int sock_fd, Token *user)
     printf("%s\n", res.body);
 }
 
+// MODIFY customer_id field value
+void modify_customer_details(int sock_fd, Token *user)
+{
+    Request req;
+    Response res;
+    int customer_id, choice;
+    char *value;
+
+    printf("\nCUSTOMER ID: ");
+    scanf("%d", &customer_id);
+
+    printf("\nWhich detail would you like to modify?\n");
+    printf("1. Username\n");
+    printf("2. Password\n");
+    printf("Enter your choice: ");
+    scanf("%d", &choice);
+
+    switch (choice)
+    {
+    case 1:
+        value = (char *)malloc(sizeof(char) * USERNAME_SIZE);
+        printf("Enter the new username: ");
+        scanf("%s", value);
+        snprintf(req.arguments, MAX_ARGUMENT_SIZE - 1, "MODIFY %d USERNAME %s", customer_id, value);
+        break;
+
+    case 2:
+        value = (char *)malloc(sizeof(char) * PASSWORD_SIZE);
+        printf("Enter the new password: ");
+        scanf("%s", value);
+        snprintf(req.arguments, MAX_ARGUMENT_SIZE - 1, "MODIFY %d PASSWORD %s", customer_id, value);
+        break;
+
+    default:
+        return;
+    }
+
+    req.user = *user;
+    req.argc = 4;
+
+    if (send(sock_fd, &req, sizeof(Request), 0) < 0)
+        return;
+    if (read(sock_fd, &res, sizeof(Response)) < 0)
+        return;
+
+    printf("\n%s\n", res.body);
+}
+
 void regular_employee_handler(int sock_fd, Token *user)
 {
     while (1)
@@ -75,6 +122,10 @@ void regular_employee_handler(int sock_fd, Token *user)
         {
         case 1:
             add_new_customer(sock_fd, user);
+            break;
+
+        case 2:
+            modify_customer_details(sock_fd, user);
             break;
 
         case 7:

@@ -1,4 +1,3 @@
-#include "customer_server.c"
 #include "employees_server.c"
 #include "admin_server.c"
 #include "common_server.c"
@@ -79,7 +78,7 @@ void handle_requests(int sock_fd, Request *req)
         else
             snprintf(res.body, RES_BODY_SIZE - 1, "\nINVALID REQUEST\n");
         break;
-    
+
     case CUSTOMER:
         handle_customer_requests(argv, &res);
         break;
