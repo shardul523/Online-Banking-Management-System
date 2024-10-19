@@ -1,4 +1,4 @@
 data
-client
-server
+*.out
 seed_data
+.vscode
