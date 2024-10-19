@@ -1,5 +1,6 @@
 #include "../globals.h"
 #include "common_server.c"
+#include <fcntl.h>
 
 void login_customer(char *username, char *password, Response *res)
 {
@@ -39,16 +40,34 @@ int get_customer(Token *user, Customer *cust) {
 
     if (fd == -1) return -1;
 
-    while (read(fd, cust, sizeof(Customer)) > 0)
-    {
-        if (cust->customer_id != user->user_id) continue;
+    // while (read(fd, cust, sizeof(Customer)) > 0)
+    // {
+    //     if (cust->customer_id != user->user_id) continue;
+    //     found = True;
+    //     break;
+    // }
+    //
+    lseek(fd, user->user_id - 1, SEEK_SET);
+
+    if (read(fd, cust, sizeof(Customer)))
         found = True;
-        break;
-    }
 
     if (found) return 0;
-    
+
     return -1;
+}
+
+int update_customer(Customer* cust) {
+    int fd = open(CUSTOMERS_FILE, O_WRONLY);
+
+    if (fd == -1) return -1;
+
+    lseek(fd, cust->customer_id - 1, SEEK_SET);
+
+    if (write(fd, cust, sizeof(Customer)) == 0)
+        return -1;
+
+    return 0;
 }
 
 
@@ -63,15 +82,39 @@ void view_customer_balance(Response* res) {
     snprintf(res->body, RES_BODY_SIZE - 1, "CUSTOMER BALANCE: %.2lf\n", cust.balance);
 }
 
-
-void handle_customer_requests(char** argv, Response *res) 
+void withdraw_money(Response* res, double amount)
 {
-    if (strcmp(argv[0], "GET_BALANCE") == 0) 
+    Customer cust;
+
+    if (get_customer(&res->user, &cust) < 0) {
+        strcpy(res->body, "Could not withdraw the money\n");
+        return;
+    }
+
+    if (cust.balance < amount) {
+        strcpy(res->body, "Insufficient Balance\n");
+        return;
+    }
+
+    cust.balance -= amount;
+
+    if (update_customer(&cust) == -1) {
+        strcpy(res->body, "Could not withdraw the money");
+        return;
+    }
+
+    snprintf(res->body, MAX_ARGUMENT_SIZE - 1, "Withdrawn amount %lf\nNew Balance: %lf", amount, cust.balance);
+}
+
+
+void handle_customer_requests(char** argv, Response *res)
+{
+    if (strcmp(argv[0], "GET_BALANCE") == 0)
     {
         printf("Getting Customer Balance...\n");
         view_customer_balance(res);
-    } 
-    else if (strcmp(argv[0], "LOGOUT") == 0) 
+    }
+    else if (strcmp(argv[0], "LOGOUT") == 0)
     {
         logout(res);
     }

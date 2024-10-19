@@ -36,6 +36,26 @@ int view_account_balance(int sock_fd, Token *user)
     return 0;
 }
 
+void withdraw_money(int sock_fd, Token* user)
+{
+    Request req;
+    Response res;
+    double amount;
+
+    printf("Enter the amount you would like to withdraw: ");
+    scanf("%lf", &amount);
+
+    req.user = *user;
+    req.argc = 2;
+    snprintf(req.arguments, MAX_ARGUMENT_SIZE - 1, "WITHDRAW %lf", amount);
+
+    if (send(sock_fd, &req, sizeof(Request), 0) < 0) return;
+
+    if (read(sock_fd, &res, sizeof(Response)) < 0) return;
+
+    printf("\n%s\n", res.body);
+}
+
 void customer_handler(int sock_fd, Token *user)
 {
     int choice;
@@ -50,11 +70,12 @@ void customer_handler(int sock_fd, Token *user)
         {
         case 1:
             // printf("Get customer balance\n");
-            view_account_balance(sock_fd, user);
+            if (view_account_balance(sock_fd, user) == -1)
+                printf("Please try again later!\n");
             break;
 
         case 2:
-            printf("Withdraw money from account\n");
+            withdraw_money(sock_fd, user);
             break;
 
         case 3:
