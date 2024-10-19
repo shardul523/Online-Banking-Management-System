@@ -39,6 +39,12 @@ void login_customer(char *username, char *password, Response *res)
         return;
     }
 
+    if (!cust.is_active)
+    {
+        strcpy(res->body, "\nAccount Inactive\n");
+        return;
+    }
+
     // Bool logged_in = False;
     // int fd = open(CUSTOMERS_FILE, O_RDONLY);
 

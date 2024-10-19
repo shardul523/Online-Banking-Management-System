@@ -31,13 +31,13 @@ int login(int socket_fd, Token *user, char *username, char *password, UserType t
 
     *user = login_res.user;
 
-    if (user->user_type != NONE)
-        printf("%s\n", login_res.body);
+    printf("%s\n", login_res.body);
 
     return 0;
 }
 
-int logout(int socket_fd, Token* user) {
+int logout(int socket_fd, Token *user)
+{
     Request req;
     Response res;
 
@@ -45,9 +45,11 @@ int logout(int socket_fd, Token* user) {
     req.user = *user;
     strcpy(req.arguments, "LOGOUT");
 
-    if (send(socket_fd, &req, sizeof(Request), 0) < 0) return -1;
+    if (send(socket_fd, &req, sizeof(Request), 0) < 0)
+        return -1;
 
-    if (read(socket_fd, &res, sizeof(Response)) < 0) return -1;
+    if (read(socket_fd, &res, sizeof(Response)) < 0)
+        return -1;
 
     *user = res.user;
 

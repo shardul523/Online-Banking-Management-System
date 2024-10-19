@@ -59,6 +59,7 @@ typedef struct
     double balance;
     char username[USERNAME_SIZE];
     char password[PASSWORD_SIZE];
+    Bool is_active;
     // char feedback[FEEDBACK_SIZE];
 } Customer;
 
