@@ -56,6 +56,26 @@ void withdraw_money(int sock_fd, Token* user)
     printf("\n%s\n", res.body);
 }
 
+void deposit_money(int sock_fd, Token* user)
+{
+    Request req;
+    Response res;
+    double amount;
+
+    printf("Enter the amount you would like to deposit: ");
+    scanf("%lf", &amount);
+
+    req.user = *user;
+    req.argc = 2;
+    snprintf(req.arguments, MAX_ARGUMENT_SIZE - 1, "DEPOSIT %lf", amount);
+
+    if (send(sock_fd, &req, sizeof(Request), 0) < 0) return;
+
+    if (read(sock_fd, &res, sizeof(Response)) < 0) return;
+
+    printf("\n%s\n", res.body);
+}
+
 void customer_handler(int sock_fd, Token *user)
 {
     int choice;
@@ -79,7 +99,7 @@ void customer_handler(int sock_fd, Token *user)
             break;
 
         case 3:
-            printf("Deposit money in customer's account\n");
+            deposit_money(sock_fd, user);
             break;
 
         case 4:
