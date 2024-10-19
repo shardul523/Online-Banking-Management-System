@@ -39,10 +39,58 @@ void login_admin(char *username, char *password, Response *res)
     close(fd);
 }
 
-void handle_admin_requests(char** argv, Response *res) 
+void add_new_employee(Response *res, char *username, char *password)
+{
+    Record *record = get_record();
+
+    if (record == NULL)
+    {
+        strcpy(res->body, "Could not get access records file\n");
+        return;
+    }
+
+    int fd = open(EMPLOYEES_FILE, O_WRONLY);
+
+    int new_uid = record->employees_count + 1;
+
+    if (!update_record(record->customers_count, new_uid, record->admins_count))
+    {
+        strcpy(res->body, "Could not write to the records file\n");
+        return;
+    }
+
+    if (lseek(fd, 0, SEEK_END) < 0)
+    {
+        strcpy(res->body, "Could not open the employees file\n");
+        return;
+    }
+
+    Employee new_emp;
+    new_emp.employee_id = new_uid;
+    new_emp.role = REGULAR;
+    strcpy(new_emp.username, username);
+    strcpy(new_emp.password, password);
+
+    if (write(fd, &new_emp, sizeof(Employee)) < 0)
+    {
+        update_record(record->customers_count, record->employees_count, record->admins_count);
+        strcpy(res->body, "Could not create the employee\n");
+        return;
+    }
+
+    strcpy(res->body, "Bank Employee Created Successfully\n");
+
+    close(fd);
+}
+
+void handle_admin_requests(char **argv, Response *res)
 {
     if (strcmp(argv[0], "LOGOUT") == 0)
     {
         logout(res);
+    }
+    else if (strcmp(argv[0], "ADD_EMPLOYEE") == 0)
+    {
+        add_new_employee(res, argv[1], argv[2]);
     }
 }

@@ -4,7 +4,6 @@
 
 ### Taks remaining -
 
-- Implement Logout
 - Implement Account Creation
 - Implement Customer Functions
 - Implement Employee Functions
