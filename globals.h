@@ -25,10 +25,17 @@ typedef enum
     ADMIN
 } UserType;
 
+typedef enum
+{
+    REGULAR,
+    MANAGER
+} Role;
+
 typedef struct
 {
     int user_id;
     UserType user_type;
+    Role role;
     char username[USERNAME_SIZE];
 } Token;
 
@@ -53,12 +60,6 @@ typedef struct
     char password[PASSWORD_SIZE];
     // char feedback[FEEDBACK_SIZE];
 } Customer;
-
-typedef enum
-{
-    REGULAR,
-    MANAGER
-} Role;
 
 typedef struct
 {

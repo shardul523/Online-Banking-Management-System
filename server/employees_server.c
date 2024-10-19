@@ -1,8 +1,4 @@
-#include <fcntl.h>
-#include <unistd.h>
-#include <string.h>
-#include <stdio.h>
-
+#include "common_server.c"
 #include "../globals.h"
 
 void login_employee(char *username, char *password, Response *res)
@@ -26,8 +22,6 @@ void login_employee(char *username, char *password, Response *res)
         break;
     }
 
-    printf("Username: %s\n Password: %s\n", e.username, e.password);
-
     if (!logged_in)
     {
         close(fd);
@@ -39,8 +33,17 @@ void login_employee(char *username, char *password, Response *res)
 
     res->user.user_id = e.employee_id;
     res->user.user_type = EMPLOYEE;
+    res->user.role = e.role;
     strcpy(res->user.username, username);
     snprintf(res->body, RES_BODY_SIZE - 1, "\nLogin Successful\n");
 
     close(fd);
+}
+
+void handle_employee_requests(char** argv, Response *res) 
+{
+    if (strcmp(argv[0], "LOGOUT") == 0)
+    {
+        logout(res);
+    }
 }

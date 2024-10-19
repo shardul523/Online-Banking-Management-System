@@ -1,9 +1,5 @@
-#include <fcntl.h>
-#include <unistd.h>
-#include <string.h>
-#include <stdio.h>
-
 #include "../globals.h"
+#include "common_server.c"
 
 void login_customer(char *username, char *password, Response *res)
 {
@@ -56,13 +52,27 @@ int get_customer(Token *user, Customer *cust) {
 }
 
 
-void view_customer_balance(Token *user, Response* res) {
+void view_customer_balance(Response* res) {
     Customer cust;
 
-    if (get_customer(user, &cust) < 0) {
+    if (get_customer(&res->user, &cust) < 0) {
         snprintf(res->body, RES_BODY_SIZE - 1, "Could not get customer details\n");
         return;
     }
 
     snprintf(res->body, RES_BODY_SIZE - 1, "CUSTOMER BALANCE: %.2lf\n", cust.balance);
+}
+
+
+void handle_customer_requests(char** argv, Response *res) 
+{
+    if (strcmp(argv[0], "GET_BALANCE") == 0) 
+    {
+        printf("Getting Customer Balance...\n");
+        view_customer_balance(res);
+    } 
+    else if (strcmp(argv[0], "LOGOUT") == 0) 
+    {
+        logout(res);
+    }
 }

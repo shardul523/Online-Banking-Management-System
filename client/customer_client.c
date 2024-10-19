@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "../globals.h"
+#include "common_client.c"
 
 void display_customer_menu()
 {
@@ -46,6 +46,9 @@ void customer_handler(int sock_fd, Token *user)
                 printf("Transfer funds to another account\n");
                 break;
             
+            case 9:
+                logout(sock_fd, user);
+                return;
             default:
                 printf("Operation Not Found\n");
                 break;

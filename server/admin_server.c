@@ -1,8 +1,4 @@
-#include <fcntl.h>
-#include <unistd.h>
-#include <string.h>
-#include <stdio.h>
-
+#include "common_server.c"
 #include "../globals.h"
 
 void login_admin(char *username, char *password, Response *res)
@@ -41,4 +37,12 @@ void login_admin(char *username, char *password, Response *res)
     snprintf(res->body, RES_BODY_SIZE - 1, "\nLogin Successful\n");
 
     close(fd);
+}
+
+void handle_admin_requests(char** argv, Response *res) 
+{
+    if (strcmp(argv[0], "LOGOUT") == 0)
+    {
+        logout(res);
+    }
 }
