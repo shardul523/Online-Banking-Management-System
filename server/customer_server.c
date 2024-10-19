@@ -1,6 +1,5 @@
 #include "../globals.h"
 #include "common_server.c"
-#include <fcntl.h>
 
 void login_customer(char *username, char *password, Response *res)
 {
@@ -47,11 +46,16 @@ int get_customer(Token *user, Customer *cust) {
     //     break;
     // }
     //
-    lseek(fd, user->user_id - 1, SEEK_SET);
+    lseek(fd, (user->user_id - 1) * sizeof(Customer) , SEEK_SET);
 
     if (read(fd, cust, sizeof(Customer)))
         found = True;
 
+    // printf("Customer ID: %d\n", cust->customer_id);
+    // printf("Customer username %s\n", cust->username);
+    // printf("Customer Balance: %lf\n", cust->balance);
+
+    close(fd);
     if (found) return 0;
 
     return -1;
@@ -64,8 +68,12 @@ int update_customer(Customer* cust) {
 
     lseek(fd, cust->customer_id - 1, SEEK_SET);
 
-    if (write(fd, cust, sizeof(Customer)) == 0)
+    if (write(fd, cust, sizeof(Customer)) == 0) {
+        close(fd);
         return -1;
+    }
+
+    close(fd);
 
     return 0;
 }
@@ -103,9 +111,27 @@ void withdraw_money(Response* res, double amount)
         return;
     }
 
-    snprintf(res->body, MAX_ARGUMENT_SIZE - 1, "Withdrawn amount %lf\nNew Balance: %lf", amount, cust.balance);
+    snprintf(res->body, MAX_ARGUMENT_SIZE - 1, "Withdrawn amount %.2lf\nNew Balance: %.2lf", amount, cust.balance);
 }
 
+void deposit_money(Response* res, double amount)
+{
+    Customer cust;
+
+    if (get_customer(&res->user, &cust) < 0) {
+        strcpy(res->body, "Could not deposit the money\n");
+        return;
+    }
+
+    cust.balance += amount;
+
+    if (update_customer(&cust) == -1) {
+        strcpy(res->body, "Could not withdraw the money");
+        return;
+    }
+
+    snprintf(res->body, MAX_ARGUMENT_SIZE - 1, "Deposited amount %.2lf\nNew Balance: %.2lf", amount, cust.balance);
+}
 
 void handle_customer_requests(char** argv, Response *res)
 {
@@ -113,6 +139,14 @@ void handle_customer_requests(char** argv, Response *res)
     {
         printf("Getting Customer Balance...\n");
         view_customer_balance(res);
+    }
+    else if (strcmp(argv[0], "WITHDRAW") == 0)
+    {
+        withdraw_money(res, atof(argv[1]));
+    }
+    else if (strcmp(argv[0], "DEPOSIT") == 0)
+    {
+        deposit_money(res, atof(argv[1]));
     }
     else if (strcmp(argv[0], "LOGOUT") == 0)
     {

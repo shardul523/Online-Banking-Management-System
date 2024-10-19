@@ -29,7 +29,7 @@ int main()
 
     Admin admin = {1, "sanal", "test1234"};
 
-    struct Record record = {3, 2, 1};
+    Record record = {3, 2, 1};
 
     if (write(customers_fd, customers, sizeof(customers)) <= 0)
     {
@@ -39,7 +39,7 @@ int main()
 
     write(employees_fd, &employees, sizeof(employees));
     write(admin_fd, &admin, sizeof(admin));
-    write(records_fd, &record, sizeof(struct Record));
+    write(records_fd, &record, sizeof(Record));
 
     close(customers_fd);
     close(employees_fd);
