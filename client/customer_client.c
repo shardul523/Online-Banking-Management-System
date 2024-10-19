@@ -16,48 +16,7 @@ void display_customer_menu()
     printf("9. Logout\n");
 }
 
-int view_account_balance(int sock_fd, Token* user);
-
-void customer_handler(int sock_fd, Token *user) 
-{
-    int choice;
-    
-    while (1) {
-        display_customer_menu();
-        printf("\nEnter your choice: ");
-        scanf("%d", &choice);
-
-        switch (choice)
-        {
-            case 1:
-                //printf("Get customer balance\n");
-                view_account_balance(sock_fd, user);
-                break;
-
-            case 2:
-                printf("Withdraw money from account\n");
-                break;
-
-            case 3:
-                printf("Deposit money in customer's account\n");
-                break;
-
-            case 4:
-                printf("Transfer funds to another account\n");
-                break;
-            
-            case 9:
-                logout(sock_fd, user);
-                return;
-            default:
-                printf("Operation Not Found\n");
-                break;
-        }
-    }
-}
-
-
-int view_account_balance(int sock_fd, Token* user)
+int view_account_balance(int sock_fd, Token *user)
 {
     Request req;
     Response res;
@@ -66,13 +25,52 @@ int view_account_balance(int sock_fd, Token* user)
     req.argc = 1;
     strcpy(req.arguments, "GET_BALANCE");
 
-    if (send(sock_fd, &req, sizeof(Request), 0) < 0) 
+    if (send(sock_fd, &req, sizeof(Request), 0) < 0)
         return -1;
-    
+
     if (read(sock_fd, &res, sizeof(Response)) < 0)
         return -1;
 
     printf("%s\n", res.body);
 
     return 0;
+}
+
+void customer_handler(int sock_fd, Token *user)
+{
+    int choice;
+
+    while (1)
+    {
+        display_customer_menu();
+        printf("\nEnter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice)
+        {
+        case 1:
+            // printf("Get customer balance\n");
+            view_account_balance(sock_fd, user);
+            break;
+
+        case 2:
+            printf("Withdraw money from account\n");
+            break;
+
+        case 3:
+            printf("Deposit money in customer's account\n");
+            break;
+
+        case 4:
+            printf("Transfer funds to another account\n");
+            break;
+
+        case 9:
+            logout(sock_fd, user);
+            return;
+        default:
+            printf("Operation Not Found\n");
+            break;
+        }
+    }
 }

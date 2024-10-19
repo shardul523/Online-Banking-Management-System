@@ -10,7 +10,8 @@
 
 #include "../globals.h"
 
-void logout(Response *res) {
+void logout(Response *res)
+{
     res->user.user_id = -1;
     res->user.user_type = NONE;
     strcpy(res->user.username, "");
@@ -28,6 +29,36 @@ void extract_args(int c, char **a, char *str)
     {
         a[i] = __strtok_r(NULL, delim, &saveptr);
     }
+}
+
+Record *get_record()
+{
+    int record_fd = open(RECORDS_FILE, O_RDONLY);
+
+    if (record_fd == -1)
+        return NULL;
+
+    Record *rec = (Record *)malloc(sizeof(Record));
+
+    if (read(record_fd, rec, sizeof(Record)) < 0)
+        return NULL;
+
+    return rec;
+}
+
+Bool update_record(int cust_c, int emp_c, int adm_c)
+{
+    Record rec = {cust_c, emp_c, adm_c};
+
+    int record_fd = open(RECORDS_FILE, O_WRONLY);
+
+    if (record_fd == -1)
+        return False;
+
+    if (write(record_fd, &rec, sizeof(Record)) < 0)
+        return False;
+
+    return True;
 }
 
 #endif

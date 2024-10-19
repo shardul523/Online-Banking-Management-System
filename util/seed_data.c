@@ -3,13 +3,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "globals.h"
+#include "../globals.h"
 
 int main()
 {
-    int customers_fd = open("data/CUSTOMERS_DB", O_CREAT | O_RDWR, 0766);
-    int employees_fd = open("data/EMPLOYEES_DB", O_CREAT | O_WRONLY, 0666);
-    int admin_fd = open("data/ADMIN_DB", O_CREAT | O_WRONLY, 0666);
+    int employees_fd = open(EMPLOYEES_FILE, O_CREAT | O_WRONLY, 0666);
+    int customers_fd = open(CUSTOMERS_FILE, O_CREAT | O_RDWR, 0766);
+    int records_fd = open(RECORDS_FILE, O_CREAT | O_WRONLY, 0666);
+    int admin_fd = open(ADMIN_FILE, O_CREAT | O_WRONLY, 0666);
 
     if (customers_fd == -1 || employees_fd == -1 || admin_fd == -1)
     {
@@ -28,6 +29,8 @@ int main()
 
     Admin admin = {1, "sanal", "test1234"};
 
+    struct Record record = {3, 2, 1};
+
     if (write(customers_fd, customers, sizeof(customers)) <= 0)
     {
         perror("Could not write to the database");
@@ -36,8 +39,10 @@ int main()
 
     write(employees_fd, &employees, sizeof(employees));
     write(admin_fd, &admin, sizeof(admin));
+    write(records_fd, &record, sizeof(struct Record));
 
     close(customers_fd);
     close(employees_fd);
     close(admin_fd);
+    close(records_fd);
 }

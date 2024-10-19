@@ -4,6 +4,7 @@
 #define CUSTOMERS_FILE "../data/CUSTOMERS_DB"
 #define EMPLOYEES_FILE "../data/EMPLOYEES_DB"
 #define ADMIN_FILE "../data/ADMIN_DB"
+#define RECORDS_FILE "../data/RECORDS_DB"
 #define USERNAME_SIZE 30
 #define PASSWORD_SIZE 15
 #define FEEDBACK_SIZE 300
@@ -75,5 +76,12 @@ typedef struct
     char username[USERNAME_SIZE];
     char password[PASSWORD_SIZE];
 } Admin;
+
+typedef struct
+{
+    int customers_count;
+    int employees_count;
+    int admins_count;
+} Record;
 
 #endif
