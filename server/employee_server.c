@@ -174,6 +174,27 @@ void logout_employee(Response *res)
     logout(res);
 }
 
+void change_employee_password(Response *res, char* new_password)
+{
+    Employee emp;
+
+    if (get_employee(res->user.user_id, &emp) == -1) 
+    {
+        strcpy(res->body, "Could not change the password");
+        return;
+    }
+
+    strcpy(emp.password, new_password);
+
+    if (update_employee(&emp) == -1) 
+    {
+        strcpy(res->body, "Could not change the password");
+        return;
+    }
+
+    strcpy(res->body, "Password Changed Successfully");
+}
+
 // REGULAR EMPLOYEE FUNCTIONS
 
 void add_new_customer(Response *res, char *username, char *password, double balance)
@@ -299,7 +320,7 @@ void view_assigned_loan_applications(Response *res)
         }
     }
 
-    
+
 }
 
 // MANAGER EMPLOYEE FUNCTIONS
@@ -422,6 +443,10 @@ void handle_regular_employee_requests(char **argv, Response *res)
     {
         view_assigned_loan_applications(res);
     }
+    else if(are_equal(argv[0], "PASSWORD_CHANGE"))
+    {
+        change_employee_password(res, argv[1]);
+    }
 }
 
 void handle_manager_requests(char **argv, Response *res)
@@ -445,6 +470,10 @@ void handle_manager_requests(char **argv, Response *res)
     else if (are_equal(argv[0], "ASSIGN_LOAN"))
     {
         assign_loan_applications(res, atoi(argv[1]), argv[2]);
+    }
+    else if(are_equal(argv[0], "PASSWORD_CHANGE"))
+    {
+        change_employee_password(res, argv[1]);
     }
 }
 

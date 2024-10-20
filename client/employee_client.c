@@ -21,6 +21,26 @@ void display_manager_menu()
     printf("6. Logout\n");
 }
 
+void change_employee_password(int sock_fd, Token *user)
+{
+    Request req;
+    Response res;
+    char new_pass[PASSWORD_SIZE];
+
+    req.user = *user;
+    req.argc = 2;
+
+    printf("Enter the new password: ");
+    scanf("%s", new_pass);
+
+    snprintf(req.arguments, MAX_ARGUMENT_SIZE - 1, "PASSWORD_CHANGE %s", new_pass);
+
+    if (send(sock_fd, &req, sizeof(Request), 0) < 0) return;
+    if (read(sock_fd, &res, sizeof(Response)) < 0) return;
+
+    printf("\n%s\n", res.body);
+}
+
 // REGULAR EMPLOYEE FUNCTIONS
 
 void add_new_customer(int sock_fd, Token *user)
@@ -285,6 +305,10 @@ void regular_employee_handler(int sock_fd, Token *user)
         case 4:
             view_assigned_loan_applications(sock_fd, user);
             break;
+
+        case 6:
+            change_employee_password(sock_fd, user);
+            break;
         case 7:
             logout(sock_fd, user);
             return;
@@ -330,6 +354,10 @@ void manager_employee_handler(int sock_fd, Token *user)
 
         case 3:
             assign_loan_application(sock_fd, user);
+            break;
+
+        case 5:
+            change_employee_password(sock_fd, user);
             break;
 
         case 6:
