@@ -1,5 +1,4 @@
-#include "common_server.c"
-#include "../globals.h"
+#include "employee_server.c"
 
 void login_admin(char *username, char *password, Response *res)
 {
@@ -83,6 +82,30 @@ void add_new_employee(Response *res, char *username, char *password)
     close(fd);
 }
 
+void modify_employee_details(Response *res, int employee_id, char *field, char *value)
+{
+    Employee emp;
+
+    if (get_employee(employee_id, &emp) == -1)
+    {
+        strcpy(res->body, "Could not get customer details");
+        return;
+    }
+
+    if (strcmp(field, "USERNAME") == 0)
+        strcpy(emp.username, value);
+    else if (strcmp(field, "PASSWORD") == 0)
+        strcpy(emp.password, value);
+
+    if (update_employee(&emp) == -1)
+    {
+        strcpy(res->body, "Could not modify employee details");
+        return;
+    }
+
+    snprintf(res->body, MAX_ARGUMENT_SIZE - 1, "\nEMPLOYEE DETAILS MODIFIED\nNEW MODIFIED %s: %s\n", field, value);
+}
+
 void handle_admin_requests(char **argv, Response *res)
 {
     if (strcmp(argv[0], "LOGOUT") == 0)
@@ -92,5 +115,13 @@ void handle_admin_requests(char **argv, Response *res)
     else if (strcmp(argv[0], "ADD_EMPLOYEE") == 0)
     {
         add_new_employee(res, argv[1], argv[2]);
+    }
+    else if (are_equal(argv[0], "MODIFY_CUSTOMER"))
+    {
+        modify_customer_details(res, atoi(argv[1]), argv[2], argv[3]);
+    }
+    else if (are_equal(argv[0], "MODIFY_EMPLOYEE"))
+    {
+        modify_employee_details(res, atoi(argv[1]), argv[2], argv[3]);
     }
 }

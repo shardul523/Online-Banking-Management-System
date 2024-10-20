@@ -1,6 +1,44 @@
-#include "common_server.c"
-#include "../globals.h"
 #include "customer_server.c"
+
+int get_employee(int user_id, Employee *emp)
+{
+    int fd = open(EMPLOYEES_FILE, O_RDONLY);
+    Bool found = False;
+
+    if (fd == -1)
+        return -1;
+
+    lseek(fd, (user_id - 1) * sizeof(Employee), SEEK_SET);
+
+    if (read(fd, emp, sizeof(Employee)))
+        found = True;
+
+    close(fd);
+    if (found)
+        return 0;
+
+    return -1;
+}
+
+int update_employee(Employee *emp)
+{
+    int fd = open(EMPLOYEES_FILE, O_WRONLY);
+
+    if (fd == -1)
+        return -1;
+
+    lseek(fd, (emp->employee_id - 1) * sizeof(Employee), SEEK_SET);
+
+    if (write(fd, emp, sizeof(Employee)) == 0)
+    {
+        close(fd);
+        return -1;
+    }
+
+    close(fd);
+
+    return 0;
+}
 
 void login_employee(char *username, char *password, Response *res)
 {
