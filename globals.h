@@ -29,7 +29,7 @@ typedef enum
 
 typedef enum
 {
-    REGULAR,
+    REGULAR = 1,
     MANAGER
 } Role;
 

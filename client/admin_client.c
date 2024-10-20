@@ -94,6 +94,33 @@ void modify_detalis(int sock_fd, Token *user, UserType user_type)
     printf("\n%s\n", res.body);
 }
 
+void manage_user_roles(int sock_fd, Token* user)
+{
+    Request req;
+    Response res;
+    int employee_id;
+    int role;
+
+    req.argc = 3;
+    req.user = *user;
+
+    printf("Enter the Employee ID whose role is to be changed: ");
+    scanf("%d", &employee_id);
+
+    printf("Enter the new role of the given employee:\n");
+    printf("1. Regular Employee\n");
+    printf("2. Manager\n");
+    printf("\nChoice: ");
+    scanf("%d", &role);
+
+    snprintf(req.arguments, MAX_ARGUMENT_SIZE - 1, "CHANGE_USER_ROLE %d %d", employee_id, role);
+
+    if (send(sock_fd, &req, sizeof(Request), 0) < 0) return;
+    if (read(sock_fd, &res, sizeof(Response)) < 0) return;
+
+    printf("\n%s\n", res.body);
+}
+
 void change_admin_password(int sock_fd, Token* user)
 {
     Request req;
@@ -139,6 +166,14 @@ void admin_handler(int sock_fd, Token *user)
             printf("\nEnter the type of user you would like to modfiy: ");
             scanf("%d", (int*) &type);
             modify_detalis(sock_fd, user, type);
+            break;
+
+        case 3:
+            manage_user_roles(sock_fd, user);
+            break;
+
+        case 4:
+            change_admin_password(sock_fd, user);
             break;
 
         case 5:

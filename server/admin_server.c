@@ -85,7 +85,7 @@ void login_admin(char *username, char *password, Response *res)
         return;
     }
 
-    if (are_equal(adm.password, password) == -1)
+    if (!are_equal(adm.password, password))
     {
         strcpy(res->body, "Invalid Username / Password");
         return;
@@ -187,6 +187,7 @@ void add_new_employee(Response *res, char *username, char *password)
     Employee new_emp;
     new_emp.employee_id = new_uid;
     new_emp.role = REGULAR;
+    new_emp.in_session = False;
     strcpy(new_emp.username, username);
     strcpy(new_emp.password, password);
 
@@ -247,6 +248,29 @@ void change_admin_password(Response *res, char* new_password)
     strcpy(res->body, "Password Changed Successfully");
 }
 
+void manage_user_roles(Response *res, int emp_id, int role)
+{
+    Employee emp;
+
+    if (get_employee(emp_id, &emp) == -1) 
+    {
+        strcpy(res->body, "Could not find the employee with the given ID");
+        return;
+    }
+
+    if (role == 1)
+        emp.role = REGULAR;
+    else if (role == 2)
+        emp.role = MANAGER;
+
+    if (update_employee(&emp) == -1) 
+    {
+        strcpy(res->body, "Could not change the role for the given user");
+        return;
+    }
+
+    strcpy(res->body, "Role changed successfully");
+}
 
 void handle_admin_requests(char **argv, Response *res, int argc)
 {
@@ -269,5 +293,9 @@ void handle_admin_requests(char **argv, Response *res, int argc)
     else if (are_equal(argv[0], "PASSWORD_CHANGE"))
     {
         change_admin_password(res, argv[1]);
+    }
+    else if (are_equal(argv[0], "CHANGE_USER_ROLE"))
+    {
+        manage_user_roles(res, atoi(argv[1]), atoi(argv[2]));
     }
 }

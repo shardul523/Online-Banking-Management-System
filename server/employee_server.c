@@ -228,6 +228,8 @@ void add_new_customer(Response *res, char *username, char *password, double bala
     Customer new_cust;
     new_cust.customer_id = new_uid;
     new_cust.balance = balance;
+    new_cust.in_session = False;
+    new_cust.is_active = True;
     strcpy(new_cust.username, username);
     strcpy(new_cust.password, password);
 
