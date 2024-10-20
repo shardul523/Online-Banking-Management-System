@@ -73,4 +73,34 @@ void print_customer(Customer *cust)
     printf("Is Customer Active: %d\n", cust->is_active);
 }
 
+int get_loan(int loan_id, Loan *loan)
+{
+    int fd = open(LOANS_FILE, O_RDONLY);
+
+    if (fd == -1)
+        return -1;
+
+    lseek(fd, (loan_id - 1) * sizeof(Loan), SEEK_SET);
+
+    if (read(fd, loan, sizeof(Loan)) <= 0)
+        return -1;
+
+    return 0;
+}
+
+int update_loan(Loan *loan)
+{
+    int fd = open(LOANS_FILE, O_WRONLY);
+
+    if (fd == -1)
+        return -1;
+
+    lseek(fd, (loan->loan_id - 1) * sizeof(Loan), SEEK_SET);
+
+    if (write(fd, loan, sizeof(Loan)) <= 0)
+        return -1;
+
+    return 0;
+}
+
 #endif

@@ -270,6 +270,10 @@ void manager_employee_handler(int sock_fd, Token *user)
             view_loan_applications(sock_fd, user);
             break;
 
+        case 3:
+            assign_loan_application(sock_fd, user);
+            break;
+
         case 6:
             logout(sock_fd, user);
             return;

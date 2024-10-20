@@ -83,7 +83,8 @@ typedef enum
 {
     PENDING = 1,
     IN_REVIEW,
-    GRANTED
+    GRANTED,
+    REJECTED
 } LoanStatus;
 
 typedef enum
@@ -113,5 +114,7 @@ typedef struct
 
 char *loan_type_names[] = {
     "", "PERSONAL", "EDUCATION", "BUSINESS"};
+
+char *loan_status_names[] = {"", "PENDING", "IN REVIEW", "GRANTED", "REJECTED"};
 
 #endif

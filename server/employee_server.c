@@ -1,6 +1,7 @@
 #include "customer_server.c"
 
 extern char *loan_type_names[];
+extern char *loan_status_names[];
 
 int get_employee(int user_id, Employee *emp)
 {
@@ -38,6 +39,26 @@ int update_employee(Employee *emp)
     }
 
     close(fd);
+
+    return 0;
+}
+
+int find_employee(char *username, Employee *emp)
+{
+    int fd = open(EMPLOYEES_FILE, O_RDONLY);
+    ssize_t bytes_read;
+
+    if (fd == -1)
+        return -1;
+
+    while ((bytes_read = read(fd, emp, sizeof(Employee))) > 0)
+    {
+        if (are_equal(emp->username, username))
+            break;
+    }
+
+    if (bytes_read == 0)
+        return -1;
 
     return 0;
 }
@@ -206,13 +227,47 @@ void view_loan_applications(Response *res)
     Loan curr_loan;
     char curr_line[100];
 
-    snprintf(res->body, MAX_ARGUMENT_SIZE - 1, "LOAN ID\t CUSTOMER ID\t LOAN TYPE\t LOAN AMOUNT\n");
+    snprintf(res->body, MAX_ARGUMENT_SIZE - 1, "LOAN ID\t CUSTOMER ID\t EMPLOYEE_ID\t LOAN TYPE\t LOAN AMOUNT\t LOAN STATUS\n");
 
     while (read(fd, &curr_loan, sizeof(Loan)) > 0)
     {
-        snprintf(curr_line, 99, "%-7d\t %-11d\t %-9s\t %-10lf\n", curr_loan.loan_id, curr_loan.customer_id, loan_type_names[1], curr_loan.amount);
+        snprintf(curr_line, 99, "%-7d\t %-11d\t %-11d\t %-9s\t %-10lf\t %-10s\n", curr_loan.loan_id, curr_loan.customer_id, curr_loan.employee_id, loan_type_names[1], curr_loan.amount, loan_status_names[curr_loan.status]);
         strcat(res->body, curr_line);
     }
+}
+
+void assign_loan_applications(Response *res, int loan_id, char *emp_name)
+{
+    Employee emp;
+    Loan loan;
+
+    if (find_employee(emp_name, &emp) == -1)
+    {
+        strcpy(res->body, "Could not find the given bank employee");
+        return;
+    }
+
+    if (emp.role == MANAGER)
+    {
+        strcpy(res->body, "The given employee is a Manager. Please choose someone else");
+        return;
+    }
+
+    if (get_loan(loan_id, &loan) == -1)
+    {
+        strcpy(res->body, "Could not get loan details");
+        return;
+    }
+
+    loan.employee_id = emp.employee_id;
+
+    if (update_loan(&loan) == -1)
+    {
+        strcpy(res->body, "Could not assign loan to employee");
+        return;
+    }
+
+    strcpy(res->body, "Loan assigned successfully");
 }
 
 void handle_regular_employee_requests(char **argv, Response *res)
@@ -248,6 +303,10 @@ void handle_manager_requests(char **argv, Response *res)
     else if (are_equal(argv[0], "VIEW_LOAN_APPLICATIONS"))
     {
         view_loan_applications(res);
+    }
+    else if (are_equal(argv[0], "ASSIGN_LOAN"))
+    {
+        assign_loan_applications(res, atoi(argv[1]), argv[2]);
     }
 }
 
