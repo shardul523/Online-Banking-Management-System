@@ -126,26 +126,29 @@ int update_customer(Customer *cust)
 int add_loan(Loan *loan)
 {
     int fd = open(LOANS_FILE, O_WRONLY | O_APPEND | O_CREAT, 0666);
-    Record* record = get_record();
+    Record *record = get_record();
 
-    if (fd == -1) return -1;
+    if (fd == -1)
+        return -1;
 
     record->loans_count++;
 
-    if (!update_record(record->customers_count, record->employees_count, record->admins_count, record->loans_count)) {
+    if (!update_record(record->customers_count, record->employees_count, record->admins_count, record->loans_count))
+    {
         close(fd);
         return -1;
     }
 
     loan->loan_id = record->loans_count;
 
-    if (write(fd, loan, sizeof(Loan)) <= 0) {
+    if (write(fd, loan, sizeof(Loan)) <= 0)
+    {
         close(fd);
         return -1;
     }
 
     return 0;
-}  
+}
 
 void view_customer_balance(Response *res)
 {
@@ -249,7 +252,8 @@ void apply_for_loan(Response *res, int loan_type, double amount)
     loan.status = PENDING;
     loan.type = loan_type;
 
-    if (add_loan(&loan) == -1) {
+    if (add_loan(&loan) == -1)
+    {
         strcpy(res->body, "Loan Application was not submitted");
         return;
     }

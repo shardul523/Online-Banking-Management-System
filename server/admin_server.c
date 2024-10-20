@@ -52,7 +52,7 @@ void add_new_employee(Response *res, char *username, char *password)
 
     int new_uid = record->employees_count + 1;
 
-    if (!update_record(record->customers_count, new_uid, record->admins_count))
+    if (!update_record(record->customers_count, new_uid, record->admins_count, record->loans_count))
     {
         strcpy(res->body, "Could not write to the records file\n");
         return;
@@ -72,7 +72,7 @@ void add_new_employee(Response *res, char *username, char *password)
 
     if (write(fd, &new_emp, sizeof(Employee)) < 0)
     {
-        update_record(record->customers_count, record->employees_count, record->admins_count);
+        update_record(record->customers_count, record->employees_count, record->admins_count, record->loans_count);
         strcpy(res->body, "Could not create the employee\n");
         return;
     }

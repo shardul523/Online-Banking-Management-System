@@ -79,7 +79,7 @@ typedef struct
     char password[PASSWORD_SIZE];
 } Admin;
 
-typedef enum 
+typedef enum
 {
     PENDING = 1,
     IN_REVIEW,
@@ -110,5 +110,8 @@ typedef struct
     int admins_count;
     int loans_count;
 } Record;
+
+char *loan_type_names[] = {
+    "", "PERSONAL", "EDUCATION", "BUSINESS"};
 
 #endif

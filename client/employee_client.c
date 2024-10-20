@@ -14,10 +14,11 @@ void display_employee_menu()
 void display_manager_menu()
 {
     printf("1. Activate/Deactivate Customer Accounts\n");
-    printf("2. Assign Loan Application Processes to Employees\n");
-    printf("3. Review Customer Feedback\n");
-    printf("4. Change Password\n");
-    printf("5. Logout\n");
+    printf("2. View Loan Applications\n");
+    printf("3. Assign Loan Application Processes to Employees\n");
+    printf("4. Review Customer Feedback\n");
+    printf("5. Change Password\n");
+    printf("6. Logout\n");
 }
 
 // REGULAR EMPLOYEE FUNCTIONS
@@ -149,6 +150,61 @@ void deactivate_customer(int sock_fd, Token *user)
     printf("\n%s\n", res.body);
 }
 
+void view_loan_applications(int sock_fd, Token *user)
+{
+    Request req;
+    Response res;
+
+    req.argc = 1;
+    req.user = *user;
+    strcpy(req.arguments, "VIEW_LOAN_APPLICATIONS");
+
+    if (send(sock_fd, &req, sizeof(Request), 0) <= 0)
+    {
+        printf("Request failed\n");
+        return;
+    }
+    if (read(sock_fd, &res, sizeof(Response)) <= 0)
+    {
+        printf("Request failed\n");
+        return;
+    }
+
+    printf("\n%s\n", res.body);
+}
+
+void assign_loan_application(int sock_fd, Token *user)
+{
+    Request req;
+    Response res;
+    int loan_id;
+    char employee_name[USERNAME_SIZE];
+
+    printf("Enter the ID of the loan to be assigned: ");
+    scanf("%d", &loan_id);
+
+    printf("Enter the username of the employee to assign the loan: ");
+    scanf("%s", employee_name);
+
+    req.argc = 3;
+    req.user = *user;
+
+    snprintf(req.arguments, MAX_ARGUMENT_SIZE - 1, "ASSIGN_LOAN %d %s", loan_id, employee_name);
+
+    if (send(sock_fd, &req, sizeof(Request), 0) <= 0)
+    {
+        printf("Request failed\n");
+        return;
+    }
+    if (read(sock_fd, &res, sizeof(Response)) <= 0)
+    {
+        printf("Request failed\n");
+        return;
+    }
+
+    printf("\n%s\n", res.body);
+}
+
 void regular_employee_handler(int sock_fd, Token *user)
 {
     while (1)
@@ -210,7 +266,11 @@ void manager_employee_handler(int sock_fd, Token *user)
                 printf("INVALID CHOICE\n");
             break;
 
-        case 5:
+        case 2:
+            view_loan_applications(sock_fd, user);
+            break;
+
+        case 6:
             logout(sock_fd, user);
             return;
 

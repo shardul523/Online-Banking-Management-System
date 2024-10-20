@@ -1,5 +1,7 @@
 #include "customer_server.c"
 
+extern char *loan_type_names[];
+
 int get_employee(int user_id, Employee *emp)
 {
     int fd = open(EMPLOYEES_FILE, O_RDONLY);
@@ -95,7 +97,7 @@ void add_new_customer(Response *res, char *username, char *password, double bala
 
     int new_uid = record->customers_count + 1;
 
-    if (!update_record(new_uid, record->employees_count, record->admins_count))
+    if (!update_record(new_uid, record->employees_count, record->admins_count, record->loans_count))
     {
         strcpy(res->body, "Could not write to the records file\n");
         return;
@@ -115,7 +117,7 @@ void add_new_customer(Response *res, char *username, char *password, double bala
 
     if (write(customer_fd, &new_cust, sizeof(Customer)) < 0)
     {
-        update_record(record->customers_count, record->employees_count, record->admins_count);
+        update_record(record->customers_count, record->employees_count, record->admins_count, record->loans_count);
         strcpy(res->body, "Could not create the user\n");
         return;
     }
@@ -197,6 +199,22 @@ void deactivate_customers(Response *res, int customer_id)
     strcpy(res->body, "Customer account deactivated");
 }
 
+void view_loan_applications(Response *res)
+{
+    int fd = open(LOANS_FILE, O_RDONLY);
+
+    Loan curr_loan;
+    char curr_line[100];
+
+    snprintf(res->body, MAX_ARGUMENT_SIZE - 1, "LOAN ID\t CUSTOMER ID\t LOAN TYPE\t LOAN AMOUNT\n");
+
+    while (read(fd, &curr_loan, sizeof(Loan)) > 0)
+    {
+        snprintf(curr_line, 99, "%-7d\t %-11d\t %-9s\t %-10lf\n", curr_loan.loan_id, curr_loan.customer_id, loan_type_names[1], curr_loan.amount);
+        strcat(res->body, curr_line);
+    }
+}
+
 void handle_regular_employee_requests(char **argv, Response *res)
 {
     if (strcmp(argv[0], "LOGOUT") == 0)
@@ -226,6 +244,10 @@ void handle_manager_requests(char **argv, Response *res)
     else if (are_equal(argv[0], "DEACTIVATE_CUSTOMER"))
     {
         deactivate_customers(res, atoi(argv[1]));
+    }
+    else if (are_equal(argv[0], "VIEW_LOAN_APPLICATIONS"))
+    {
+        view_loan_applications(res);
     }
 }
 
