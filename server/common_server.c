@@ -46,9 +46,9 @@ Record *get_record()
     return rec;
 }
 
-Bool update_record(int cust_c, int emp_c, int adm_c)
+Bool update_record(int cust_c, int emp_c, int adm_c, int loan_c)
 {
-    Record rec = {cust_c, emp_c, adm_c};
+    Record rec = {cust_c, emp_c, adm_c, loan_c};
 
     int record_fd = open(RECORDS_FILE, O_WRONLY);
 

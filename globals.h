@@ -5,6 +5,7 @@
 #define EMPLOYEES_FILE "../data/EMPLOYEES_DB"
 #define ADMIN_FILE "../data/ADMIN_DB"
 #define RECORDS_FILE "../data/RECORDS_DB"
+#define LOANS_FILE "../data/LOANS_DB"
 #define USERNAME_SIZE 30
 #define PASSWORD_SIZE 15
 #define FEEDBACK_SIZE 300
@@ -78,11 +79,36 @@ typedef struct
     char password[PASSWORD_SIZE];
 } Admin;
 
+typedef enum 
+{
+    PENDING = 1,
+    IN_REVIEW,
+    GRANTED
+} LoanStatus;
+
+typedef enum
+{
+    PERSONAL = 1,
+    EDUCATION,
+    BUSINESS
+} LoanType;
+
+typedef struct
+{
+    int loan_id;
+    double amount;
+    LoanType type;
+    int customer_id;
+    int employee_id;
+    LoanStatus status;
+} Loan;
+
 typedef struct
 {
     int customers_count;
     int employees_count;
     int admins_count;
+    int loans_count;
 } Record;
 
 #endif

@@ -105,6 +105,38 @@ void transfer_money(int sock_fd, Token *user)
     printf("\n%s\n", res.body);
 }
 
+void apply_for_loan(int sock_fd, Token *user)
+{
+    int loan_type;
+    double loan_amount;
+    Request req;
+    Response res;
+
+    printf("\n1. PERSONAL");
+    printf("\n2. EDUCATION");
+    printf("\n3. BUSINESS");
+    printf("\nEnter the type of loan to apply for: ");
+    scanf("%d", &loan_type);
+
+    if (loan_type < 1 || loan_type > 3) {
+        printf("Invalid choice\n");
+        return;
+    }
+
+    printf("\nEnter the amount you want to loan: ");
+    scanf("%lf", &loan_amount);
+
+    req.user = *user;
+    req.argc = 3;
+
+    snprintf(req.arguments, MAX_ARGUMENT_SIZE - 1, "LOAN %d %lf", loan_type, loan_amount);
+
+    if (send(sock_fd, &req, sizeof(Request), 0) < 0) return;
+    if (read(sock_fd, &res, sizeof(Response)) < 0) return;
+
+    printf("\n%s\n", res.body);
+}
+
 void customer_handler(int sock_fd, Token *user)
 {
     int choice;
@@ -133,6 +165,10 @@ void customer_handler(int sock_fd, Token *user)
 
         case 4:
             transfer_money(sock_fd, user);
+            break;
+
+        case 6:
+            apply_for_loan(sock_fd, user);
             break;
 
         case 9:

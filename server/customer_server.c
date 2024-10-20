@@ -1,6 +1,37 @@
 #include "../globals.h"
 #include "common_server.c"
 
+int get_customer(int user_id, Customer *cust)
+{
+    int fd = open(CUSTOMERS_FILE, O_RDONLY);
+    Bool found = False;
+
+    if (fd == -1)
+        return -1;
+
+    // while (read(fd, cust, sizeof(Customer)) > 0)
+    // {
+    //     if (cust->customer_id != user->user_id) continue;
+    //     found = True;
+    //     break;
+    // }
+
+    lseek(fd, (user_id - 1) * sizeof(Customer), SEEK_SET);
+
+    if (read(fd, cust, sizeof(Customer)))
+        found = True;
+
+    // printf("Customer ID: %d\n", cust->customer_id);
+    // printf("Customer username %s\n", cust->username);
+    // printf("Customer Balance: %lf\n", cust->balance);
+
+    close(fd);
+    if (found)
+        return 0;
+
+    return -1;
+}
+
 int find_customer(char *username, Customer *cust)
 {
     int fd = open(CUSTOMERS_FILE, O_RDONLY);
@@ -72,37 +103,6 @@ void login_customer(char *username, char *password, Response *res)
     // close(fd);
 }
 
-int get_customer(int user_id, Customer *cust)
-{
-    int fd = open(CUSTOMERS_FILE, O_RDONLY);
-    Bool found = False;
-
-    if (fd == -1)
-        return -1;
-
-    // while (read(fd, cust, sizeof(Customer)) > 0)
-    // {
-    //     if (cust->customer_id != user->user_id) continue;
-    //     found = True;
-    //     break;
-    // }
-
-    lseek(fd, (user_id - 1) * sizeof(Customer), SEEK_SET);
-
-    if (read(fd, cust, sizeof(Customer)))
-        found = True;
-
-    // printf("Customer ID: %d\n", cust->customer_id);
-    // printf("Customer username %s\n", cust->username);
-    // printf("Customer Balance: %lf\n", cust->balance);
-
-    close(fd);
-    if (found)
-        return 0;
-
-    return -1;
-}
-
 int update_customer(Customer *cust)
 {
     int fd = open(CUSTOMERS_FILE, O_WRONLY);
@@ -122,6 +122,30 @@ int update_customer(Customer *cust)
 
     return 0;
 }
+
+int add_loan(Loan *loan)
+{
+    int fd = open(LOANS_FILE, O_WRONLY | O_APPEND | O_CREAT, 0666);
+    Record* record = get_record();
+
+    if (fd == -1) return -1;
+
+    record->loans_count++;
+
+    if (!update_record(record->customers_count, record->employees_count, record->admins_count, record->loans_count)) {
+        close(fd);
+        return -1;
+    }
+
+    loan->loan_id = record->loans_count;
+
+    if (write(fd, loan, sizeof(Loan)) <= 0) {
+        close(fd);
+        return -1;
+    }
+
+    return 0;
+}  
 
 void view_customer_balance(Response *res)
 {
@@ -215,6 +239,24 @@ void transfer_money(Response *res, char *beneficiary_name, double amount)
     snprintf(res->body, MAX_ARGUMENT_SIZE - 1, "\nAmount %.2lf transferred from %s to %s\nUpdated Balance: %.2lf\n", amount, transferee.username, beneficiary.username, transferee.balance);
 }
 
+void apply_for_loan(Response *res, int loan_type, double amount)
+{
+    Loan loan;
+
+    loan.amount = amount;
+    loan.customer_id = res->user.user_id;
+    loan.employee_id = -1;
+    loan.status = PENDING;
+    loan.type = loan_type;
+
+    if (add_loan(&loan) == -1) {
+        strcpy(res->body, "Loan Application was not submitted");
+        return;
+    }
+
+    snprintf(res->body, MAX_ARGUMENT_SIZE - 1, "Loan Application was submitted successfully");
+}
+
 void handle_customer_requests(char **argv, Response *res)
 {
     if (strcmp(argv[0], "GET_BALANCE") == 0)
@@ -233,6 +275,10 @@ void handle_customer_requests(char **argv, Response *res)
     else if (are_equal(argv[0], "TRANSFER"))
     {
         transfer_money(res, argv[1], atof(argv[2]));
+    }
+    else if (are_equal(argv[0], "LOAN"))
+    {
+        apply_for_loan(res, atoi(argv[1]), atof(argv[2]));
     }
     else if (strcmp(argv[0], "LOGOUT") == 0)
     {

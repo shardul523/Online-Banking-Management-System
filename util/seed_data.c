@@ -30,7 +30,7 @@ int main()
 
     Admin admin = {1, "sanal", "test1234"};
 
-    Record record = {3, 2, 1};
+    Record record = {3, 2, 1, 0};
 
     if (write(customers_fd, customers, sizeof(customers)) <= 0)
     {
