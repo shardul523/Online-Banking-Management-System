@@ -35,8 +35,10 @@ void change_employee_password(int sock_fd, Token *user)
 
     snprintf(req.arguments, MAX_ARGUMENT_SIZE - 1, "PASSWORD_CHANGE %s", new_pass);
 
-    if (send(sock_fd, &req, sizeof(Request), 0) < 0) return;
-    if (read(sock_fd, &res, sizeof(Response)) < 0) return;
+    if (send(sock_fd, &req, sizeof(Request), 0) < 0)
+        return;
+    if (read(sock_fd, &res, sizeof(Response)) < 0)
+        return;
 
     printf("\n%s\n", res.body);
 }
@@ -126,7 +128,7 @@ void modify_customer_details(int sock_fd, Token *user)
     printf("\n%s\n", res.body);
 }
 
-void handle_loans(int sock_fd, Token* user)
+void handle_loans(int sock_fd, Token *user)
 {
     Request req;
     Response res;
@@ -142,7 +144,8 @@ void handle_loans(int sock_fd, Token* user)
     printf("\nEnter your choice: ");
     scanf("%d", &choice);
 
-    if (choice < 1 || choice > 2) {
+    if (choice < 1 || choice > 2)
+    {
         printf("Invalid choice\n");
         return;
     }
@@ -157,7 +160,7 @@ void handle_loans(int sock_fd, Token* user)
     if (read(sock_fd, &res, sizeof(Response)) < 0)
         return;
 
-    printf("\n%s\n", res.body);    
+    printf("\n%s\n", res.body);
 }
 
 void view_assigned_loan_applications(int sock_fd, Token *user)
@@ -175,7 +178,7 @@ void view_assigned_loan_applications(int sock_fd, Token *user)
     if (read(sock_fd, &res, sizeof(Response)) < 0)
         return;
 
-    printf("\n%s\n", res.body);      
+    printf("\n%s\n", res.body);
 }
 // MANAGER FUNCTIONS
 
@@ -306,7 +309,7 @@ void regular_employee_handler(int sock_fd, Token *user)
         int choice;
 
         printf("Hello, %s\n", user->username);
-        pritnf("Employee ID: %d\n", user->user_id);
+        printf("Employee ID: %d\n", user->user_id);
         display_employee_menu();
 
         printf("Enter your choice: ");
@@ -341,7 +344,8 @@ void regular_employee_handler(int sock_fd, Token *user)
             return;
         }
 
-        if (user->user_id == -1) return;
+        if (user->user_id == -1)
+            return;
     }
 }
 
@@ -352,6 +356,7 @@ void manager_employee_handler(int sock_fd, Token *user)
         int choice;
 
         printf("Hello, %s\n", user->username);
+        printf("Employee ID: %d\n", user->user_id);
         display_manager_menu();
 
         printf("Enter your choice: ");
@@ -398,7 +403,8 @@ void manager_employee_handler(int sock_fd, Token *user)
             return;
         }
 
-        if (user->user_id == -1) return;
+        if (user->user_id == -1)
+            return;
     }
 }
 

@@ -118,7 +118,8 @@ void apply_for_loan(int sock_fd, Token *user)
     printf("\nEnter the type of loan to apply for: ");
     scanf("%d", &loan_type);
 
-    if (loan_type < 1 || loan_type > 3) {
+    if (loan_type < 1 || loan_type > 3)
+    {
         printf("Invalid choice\n");
         return;
     }
@@ -131,8 +132,10 @@ void apply_for_loan(int sock_fd, Token *user)
 
     snprintf(req.arguments, MAX_ARGUMENT_SIZE - 1, "LOAN %d %lf", loan_type, loan_amount);
 
-    if (send(sock_fd, &req, sizeof(Request), 0) < 0) return;
-    if (read(sock_fd, &res, sizeof(Response)) < 0) return;
+    if (send(sock_fd, &req, sizeof(Request), 0) < 0)
+        return;
+    if (read(sock_fd, &res, sizeof(Response)) < 0)
+        return;
 
     printf("\n%s\n", res.body);
 }
@@ -150,8 +153,10 @@ void give_feedback(int sock_fd, Token *user)
 
     snprintf(req.arguments, MAX_ARGUMENT_SIZE - 1, "GIVE_FEEDBACK %s", feedback);
 
-    if (send(sock_fd, &req, sizeof(Request), 0) < 0) return;
-    if (read(sock_fd, &res, sizeof(Response)) < 0) return;
+    if (send(sock_fd, &req, sizeof(Request), 0) < 0)
+        return;
+    if (read(sock_fd, &res, sizeof(Response)) < 0)
+        return;
 
     printf("\n%s\n", res.body);
 }
@@ -170,8 +175,10 @@ void change_password(int sock_fd, Token *user)
 
     snprintf(req.arguments, MAX_ARGUMENT_SIZE - 1, "PASSWORD_CHANGE %s", new_pass);
 
-    if (send(sock_fd, &req, sizeof(Request), 0) < 0) return;
-    if (read(sock_fd, &res, sizeof(Response)) < 0) return;
+    if (send(sock_fd, &req, sizeof(Request), 0) < 0)
+        return;
+    if (read(sock_fd, &res, sizeof(Response)) < 0)
+        return;
 
     printf("\n%s\n", res.body);
 }
@@ -183,7 +190,7 @@ void customer_handler(int sock_fd, Token *user)
     while (1)
     {
         printf("Hello, %s\n", user->username);
-        pritnf("Customer ID: %d\n", user->user_id);
+        printf("Customer ID: %d\n", user->user_id);
         display_customer_menu();
         printf("\nEnter your choice: ");
         scanf("%d", &choice);
@@ -229,6 +236,7 @@ void customer_handler(int sock_fd, Token *user)
             break;
         }
 
-        if (user->user_id == -1) return;
+        if (user->user_id == -1)
+            return;
     }
 }

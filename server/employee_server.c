@@ -82,11 +82,13 @@ int approve_loan(Loan *loan)
 {
     Customer cust;
 
-    if (get_customer(loan->customer_id, &cust) == -1) return -1;
+    if (get_customer(loan->customer_id, &cust) == -1)
+        return -1;
 
     cust.balance += loan->amount;
 
-    if (update_customer(&cust) == -1) return -1;
+    if (update_customer(&cust) == -1)
+        return -1;
 
     return 0;
 }
@@ -112,31 +114,6 @@ void login_employee(char *username, char *password, Response *res)
         strcpy(res->body, "Another session already active");
         return;
     }
-
-    // Bool logged_in = False;
-    // int fd = open(EMPLOYEES_FILE, O_RDONLY);
-
-    // if (fd == -1)
-    // {
-    //     printf("Emp file could not be opened\n");
-    //     return;
-    // }
-
-    // while (read(fd, &e, sizeof(Employee)) > 0)
-    // {
-    //     if (strcmp(username, e.username))
-    //         continue;
-    //     if (!strcmp(password, e.password))
-    //         logged_in = True;
-    //     break;
-    // }
-
-    // if (!logged_in)
-    // {
-    //     close(fd);
-    //     strcpy(res->body, "Invalid username / password\n");
-    //     return;
-    // }
 
     e.in_session = True;
 
@@ -174,11 +151,11 @@ void logout_employee(Response *res)
     logout(res);
 }
 
-void change_employee_password(Response *res, char* new_password)
+void change_employee_password(Response *res, char *new_password)
 {
     Employee emp;
 
-    if (get_employee(res->user.user_id, &emp) == -1) 
+    if (get_employee(res->user.user_id, &emp) == -1)
     {
         strcpy(res->body, "Could not change the password");
         return;
@@ -186,7 +163,7 @@ void change_employee_password(Response *res, char* new_password)
 
     strcpy(emp.password, new_password);
 
-    if (update_employee(&emp) == -1) 
+    if (update_employee(&emp) == -1)
     {
         strcpy(res->body, "Could not change the password");
         return;
@@ -208,6 +185,14 @@ void add_new_customer(Response *res, char *username, char *password, double bala
     }
 
     int customer_fd = open(CUSTOMERS_FILE, O_WRONLY);
+
+    Customer cust;
+
+    if (find_customer(username, &cust) != -1)
+    {
+        strcpy(res->body, "Username already taken. Please try again.");
+        return;
+    }
 
     struct flock lock = set_lock(customer_fd, SEEK_SET, 0, 0, 0);
 
@@ -275,15 +260,17 @@ void handle_loan(Response *res, int loan_id, int action)
 {
     Loan loan;
 
-    if (get_loan(loan_id, &loan) == -1) 
+    if (get_loan(loan_id, &loan) == -1)
     {
         strcpy(res->body, "Loan action could not be completed. Please try again.");
         return;
     }
 
-    if (action == 1) {
+    if (action == 1)
+    {
         loan.status = GRANTED;
-        if (approve_loan(&loan) == -1) {
+        if (approve_loan(&loan) == -1)
+        {
             strcpy(res->body, "Loan could not be granted successfully");
             return;
         }
@@ -291,8 +278,8 @@ void handle_loan(Response *res, int loan_id, int action)
     else if (action == 2)
         loan.status = REJECTED;
 
-    if (update_loan(&loan) == -1) 
-    {    
+    if (update_loan(&loan) == -1)
+    {
         strcpy(res->body, "Loan action could not be completed. Please try again.");
         return;
     }
@@ -307,22 +294,23 @@ void view_assigned_loan_applications(Response *res)
     char curr_line[100];
     strcpy(res->body, "There was an error while fetching loan applications");
 
-    if (fd == -1) return;
+    if (fd == -1)
+        return;
 
     snprintf(res->body, RES_BODY_SIZE - 1, "LOAN ID\t LOAN TYPE\t CUSTOMER ID\t LOAN STATUS\n");
 
     struct flock lock = set_lock(fd, SEEK_SET, 0, sizeof(Loan), 1);
 
-    while (read(fd, &curr_loan, sizeof(Loan)) > 0) {
+    while (read(fd, &curr_loan, sizeof(Loan)) > 0)
+    {
         unlock(fd, &lock);
-        if (curr_loan.employee_id == res->user.user_id) {
-            snprintf(curr_line, 99, "%-7d\t %-9s\t %-11d\t %-10s\n", curr_loan.loan_id, loan_type_names[curr_loan.type], 
-            curr_loan.customer_id, loan_status_names[curr_loan.status]);
+        if (curr_loan.employee_id == res->user.user_id)
+        {
+            snprintf(curr_line, 99, "%-7d\t %-9s\t %-11d\t %-10s\n", curr_loan.loan_id, loan_type_names[curr_loan.type],
+                     curr_loan.customer_id, loan_status_names[curr_loan.status]);
             strcat(res->body, curr_line);
         }
     }
-
-
 }
 
 // MANAGER EMPLOYEE FUNCTIONS
@@ -429,16 +417,17 @@ void review_customer_feedback(Response *res)
     Customer curr;
     char curr_line[FEEDBACK_SIZE + 100];
 
-    if (fd == -1) {
+    if (fd == -1)
+    {
         strcpy(res->body, "Could not process customer feedbacks");
         return;
     }
 
     strcpy(res->body, "");
 
-    struct flock lock = set_lock(fd, SEEK_SET, 0 , sizeof(Customer), 1);
+    struct flock lock = set_lock(fd, SEEK_SET, 0, sizeof(Customer), 1);
 
-    while (read(fd, &curr, sizeof(Customer)) > 0 )
+    while (read(fd, &curr, sizeof(Customer)) > 0)
     {
         unlock(fd, &lock);
         if (strlen(curr.feedback) > 0)
@@ -474,7 +463,7 @@ void handle_regular_employee_requests(char **argv, Response *res)
     {
         view_assigned_loan_applications(res);
     }
-    else if(are_equal(argv[0], "PASSWORD_CHANGE"))
+    else if (are_equal(argv[0], "PASSWORD_CHANGE"))
     {
         change_employee_password(res, argv[1]);
     }
@@ -502,7 +491,7 @@ void handle_manager_requests(char **argv, Response *res)
     {
         assign_loan_applications(res, atoi(argv[1]), argv[2]);
     }
-    else if(are_equal(argv[0], "PASSWORD_CHANGE"))
+    else if (are_equal(argv[0], "PASSWORD_CHANGE"))
     {
         change_employee_password(res, argv[1]);
     }

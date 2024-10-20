@@ -1,6 +1,6 @@
 #include "employee_server.c"
 
-int get_admin(int user_id, Admin* adm)
+int get_admin(int user_id, Admin *adm)
 {
     int fd = open(ADMIN_FILE, O_RDONLY);
     Bool found = False;
@@ -79,7 +79,7 @@ void login_admin(char *username, char *password, Response *res)
 {
     Admin adm;
 
-    if (find_admin(username, &adm) == -1) 
+    if (find_admin(username, &adm) == -1)
     {
         strcpy(res->body, "Invalid Username / Password");
         return;
@@ -161,6 +161,7 @@ void logout_admin(Response *res)
 void add_new_employee(Response *res, char *username, char *password)
 {
     Record *record = get_record();
+    Employee emp;
 
     if (record == NULL)
     {
@@ -168,7 +169,15 @@ void add_new_employee(Response *res, char *username, char *password)
         return;
     }
 
+    if (find_employee(username, &emp) != -1)
+    {
+        strcpy(res->body, "Username already exists. Please try again.");
+        return;
+    }
+
     int fd = open(EMPLOYEES_FILE, O_WRONLY);
+
+    struct flock lock = set_lock(fd, SEEK_SET, 0, 0, 0);
 
     int new_uid = record->employees_count + 1;
 
@@ -200,6 +209,8 @@ void add_new_employee(Response *res, char *username, char *password)
 
     strcpy(res->body, "Bank Employee Created Successfully\n");
 
+    unlock(fd, &lock);
+
     close(fd);
 }
 
@@ -227,11 +238,11 @@ void modify_employee_details(Response *res, int employee_id, char *field, char *
     snprintf(res->body, MAX_ARGUMENT_SIZE - 1, "\nEMPLOYEE DETAILS MODIFIED\nNEW MODIFIED %s: %s\n", field, value);
 }
 
-void change_admin_password(Response *res, char* new_password)
+void change_admin_password(Response *res, char *new_password)
 {
     Admin adm;
 
-    if (get_admin(res->user.user_id, &adm) == -1) 
+    if (get_admin(res->user.user_id, &adm) == -1)
     {
         strcpy(res->body, "Could not change the password");
         return;
@@ -239,7 +250,7 @@ void change_admin_password(Response *res, char* new_password)
 
     strcpy(adm.password, new_password);
 
-    if (update_admin(&adm) == -1) 
+    if (update_admin(&adm) == -1)
     {
         strcpy(res->body, "Could not change the password");
         return;
@@ -252,7 +263,7 @@ void manage_user_roles(Response *res, int emp_id, int role)
 {
     Employee emp;
 
-    if (get_employee(emp_id, &emp) == -1) 
+    if (get_employee(emp_id, &emp) == -1)
     {
         strcpy(res->body, "Could not find the employee with the given ID");
         return;
@@ -263,7 +274,7 @@ void manage_user_roles(Response *res, int emp_id, int role)
     else if (role == 2)
         emp.role = MANAGER;
 
-    if (update_employee(&emp) == -1) 
+    if (update_employee(&emp) == -1)
     {
         strcpy(res->body, "Could not change the role for the given user");
         return;
