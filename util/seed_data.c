@@ -19,10 +19,10 @@ int main()
     }
 
     Customer customers[] = {
-        {1, 100.0, "user1", "test1234", True},
-        {2, 200.5, "user2", "test1234", True},
-        {3, 300.25, "user3", "test1234", True},
-        {4, 500, "user4", "test1234", False}};
+        {1, 100.0, "user1", "test1234", True, False, ""},
+        {2, 200.5, "user2", "test1234", True, False, ""},
+        {3, 300.25, "user3", "test1234", True, False, ""},
+        {4, 500, "user4", "test1234", False, False, ""}};
 
     Employee employees[] = {
         {MANAGER, 1, "emp1", "test1234"},

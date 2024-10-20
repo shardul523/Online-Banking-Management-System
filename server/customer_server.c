@@ -54,8 +54,50 @@ int find_customer(char *username, Customer *cust)
     return 0;
 }
 
+int update_customer(Customer *cust)
+{
+    int fd = open(CUSTOMERS_FILE, O_WRONLY);
+
+    if (fd == -1)
+        return -1;
+
+    lseek(fd, (cust->customer_id - 1) * sizeof(Customer), SEEK_SET);
+
+    if (write(fd, cust, sizeof(Customer)) == 0)
+    {
+        close(fd);
+        return -1;
+    }
+
+    close(fd);
+
+    return 0;
+}
+
+void logout_customer(Response *res)
+{
+    Customer cust;
+
+    if (get_customer(res->user.user_id, &cust) == -1)
+    {
+        strcpy(res->body, "Could not logout. Please try again later.");
+        return;
+    }
+
+    cust.in_session = False;
+
+    if (update_customer(&cust) == -1)
+    {
+        strcpy(res->body, "Could not logout. Please try again later.");
+        return;
+    }
+
+    logout(res);
+}
+
 void login_customer(char *username, char *password, Response *res)
 {
+    // int log_fd = open("LOG.txt", O_WRONLY);
     Customer cust;
 
     if (find_customer(username, &cust) == -1)
@@ -73,6 +115,12 @@ void login_customer(char *username, char *password, Response *res)
     if (!cust.is_active)
     {
         strcpy(res->body, "\nAccount Inactive\n");
+        return;
+    }
+
+    if (cust.in_session)
+    {
+        strcpy(res->body, "\nAnother session already active\n");
         return;
     }
 
@@ -94,6 +142,13 @@ void login_customer(char *username, char *password, Response *res)
     //     snprintf(res->body, RES_BODY_SIZE - 1, "Invalid Username / Password\n");
     //     return;
     // }
+    cust.in_session = True;
+
+    if (update_customer(&cust) == -1)
+    {
+        strcpy(res->body, "Could not login");
+        return;
+    }
 
     res->user.user_type = CUSTOMER;
     res->user.user_id = cust.customer_id;
@@ -101,26 +156,6 @@ void login_customer(char *username, char *password, Response *res)
     snprintf(res->body, RES_BODY_SIZE - 1, "\nLogin Successful\n");
 
     // close(fd);
-}
-
-int update_customer(Customer *cust)
-{
-    int fd = open(CUSTOMERS_FILE, O_WRONLY);
-
-    if (fd == -1)
-        return -1;
-
-    lseek(fd, (cust->customer_id - 1) * sizeof(Customer), SEEK_SET);
-
-    if (write(fd, cust, sizeof(Customer)) == 0)
-    {
-        close(fd);
-        return -1;
-    }
-
-    close(fd);
-
-    return 0;
 }
 
 int add_loan(Loan *loan)
@@ -286,6 +321,6 @@ void handle_customer_requests(char **argv, Response *res)
     }
     else if (strcmp(argv[0], "LOGOUT") == 0)
     {
-        logout(res);
+        logout_customer(res);
     }
 }

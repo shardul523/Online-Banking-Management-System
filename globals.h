@@ -61,7 +61,8 @@ typedef struct
     char username[USERNAME_SIZE];
     char password[PASSWORD_SIZE];
     Bool is_active;
-    // char feedback[FEEDBACK_SIZE];
+    Bool in_session;
+    char feedback[FEEDBACK_SIZE];
 } Customer;
 
 typedef struct
