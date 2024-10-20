@@ -421,6 +421,35 @@ void assign_loan_applications(Response *res, int loan_id, char *emp_name)
     strcpy(res->body, "Loan assigned successfully");
 }
 
+void review_customer_feedback(Response *res)
+{
+    int fd = open(CUSTOMERS_FILE, O_RDONLY);
+    Customer curr;
+    char curr_line[FEEDBACK_SIZE + 100];
+
+    if (fd == -1) {
+        strcpy(res->body, "Could not process customer feedbacks");
+        return;
+    }
+
+    strcpy(res->body, "");
+
+    struct flock lock = set_lock(fd, SEEK_SET, 0 , sizeof(Customer), 1);
+
+    while (read(fd, &curr, sizeof(Customer)) > 0 )
+    {
+        unlock(fd, &lock);
+        if (strlen(curr.feedback) > 0)
+        {
+            snprintf(curr_line, FEEDBACK_SIZE + 100, "Username: %s\n\n", curr.username);
+            strcat(curr_line, curr.feedback);
+            strcat(res->body, curr_line);
+        }
+
+        lock = set_lock(fd, SEEK_CUR, 0, sizeof(Customer), 1);
+    }
+}
+
 void handle_regular_employee_requests(char **argv, Response *res)
 {
     if (strcmp(argv[0], "LOGOUT") == 0)
@@ -474,6 +503,10 @@ void handle_manager_requests(char **argv, Response *res)
     else if(are_equal(argv[0], "PASSWORD_CHANGE"))
     {
         change_employee_password(res, argv[1]);
+    }
+    else if (are_equal(argv[0], "REVIEW_CUSTOMER_FEEDBACK"))
+    {
+        review_customer_feedback(res);
     }
 }
 

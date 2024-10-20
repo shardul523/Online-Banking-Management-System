@@ -157,7 +157,10 @@ char* join_words(char** words, int c)
     
     for (int i = 1; i <= c; i++) {
         strcat(sentence, words[i]);
+        strcat(sentence, " ");
     } 
+
+    strcat(sentence, "\n");
 
     return sentence;
 }

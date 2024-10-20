@@ -276,6 +276,29 @@ void assign_loan_application(int sock_fd, Token *user)
     printf("\n%s\n", res.body);
 }
 
+void review_customer_feedback(int sock_fd, Token *user)
+{
+    Request req;
+    Response res;
+
+    req.argc = 1;
+    req.user = *user;
+    strcpy(req.arguments, "REVIEW_CUSTOMER_FEEDBACK");
+
+    if (send(sock_fd, &req, sizeof(Request), 0) <= 0)
+    {
+        printf("Request failed\n");
+        return;
+    }
+    if (read(sock_fd, &res, sizeof(Response)) <= 0)
+    {
+        printf("Request failed\n");
+        return;
+    }
+
+    printf("\n%s\n", res.body);
+}
+
 void regular_employee_handler(int sock_fd, Token *user)
 {
     while (1)
@@ -354,6 +377,10 @@ void manager_employee_handler(int sock_fd, Token *user)
 
         case 3:
             assign_loan_application(sock_fd, user);
+            break;
+
+        case 4:
+            review_customer_feedback(sock_fd, user);
             break;
 
         case 5:
