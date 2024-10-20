@@ -71,6 +71,7 @@ typedef struct
     int employee_id;
     char username[USERNAME_SIZE];
     char password[PASSWORD_SIZE];
+    Bool in_session;
 } Employee;
 
 typedef struct
@@ -78,6 +79,7 @@ typedef struct
     int admin_id;
     char username[USERNAME_SIZE];
     char password[PASSWORD_SIZE];
+    Bool in_session;
 } Admin;
 
 typedef enum

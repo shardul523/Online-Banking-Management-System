@@ -66,40 +66,84 @@ int find_employee(char *username, Employee *emp)
 void login_employee(char *username, char *password, Response *res)
 {
     Employee e;
-    Bool logged_in = False;
-    int fd = open(EMPLOYEES_FILE, O_RDONLY);
 
-    if (fd == -1)
+    if (find_employee(username, &e) == -1)
     {
-        printf("Emp file could not be opened\n");
+        strcpy(res->body, "Invalid Username / Password");
         return;
     }
 
-    while (read(fd, &e, sizeof(Employee)) > 0)
+    if (!are_equal(e.password, password))
     {
-        if (strcmp(username, e.username))
-            continue;
-        if (!strcmp(password, e.password))
-            logged_in = True;
-        break;
-    }
-
-    if (!logged_in)
-    {
-        close(fd);
-        strcpy(res->body, "Invalid username / password\n");
+        strcpy(res->body, "Invalid Username / Password");
         return;
     }
 
-    printf("Logged in successfully\n");
+    if (e.in_session)
+    {
+        strcpy(res->body, "Another session already active");
+        return;
+    }
+
+    // Bool logged_in = False;
+    // int fd = open(EMPLOYEES_FILE, O_RDONLY);
+
+    // if (fd == -1)
+    // {
+    //     printf("Emp file could not be opened\n");
+    //     return;
+    // }
+
+    // while (read(fd, &e, sizeof(Employee)) > 0)
+    // {
+    //     if (strcmp(username, e.username))
+    //         continue;
+    //     if (!strcmp(password, e.password))
+    //         logged_in = True;
+    //     break;
+    // }
+
+    // if (!logged_in)
+    // {
+    //     close(fd);
+    //     strcpy(res->body, "Invalid username / password\n");
+    //     return;
+    // }
+
+    e.in_session = True;
+
+    if (update_employee(&e) == -1)
+    {
+        strcpy(res->body, "Could not login");
+        return;
+    }
 
     res->user.user_id = e.employee_id;
     res->user.user_type = EMPLOYEE;
     res->user.role = e.role;
     strcpy(res->user.username, username);
     snprintf(res->body, RES_BODY_SIZE - 1, "\nLogin Successful\n");
+}
 
-    close(fd);
+void logout_employee(Response *res)
+{
+    Employee e;
+
+    if (get_employee(res->user.user_id, &e) == -1)
+    {
+        strcpy(res->body, "There was an error in logging out");
+        return;
+    }
+
+    e.in_session = False;
+
+    if (update_employee(&e) == -1)
+    {
+        strcpy(res->body, "There was an error in logging out");
+        return;
+    }
+
+    logout(res);
 }
 
 // REGULAR EMPLOYEE FUNCTIONS
@@ -274,7 +318,7 @@ void handle_regular_employee_requests(char **argv, Response *res)
 {
     if (strcmp(argv[0], "LOGOUT") == 0)
     {
-        logout(res);
+        logout_employee(res);
     }
     else if (strcmp(argv[0], "ADD_CUSTOMER") == 0)
     {
@@ -290,7 +334,7 @@ void handle_manager_requests(char **argv, Response *res)
 {
     if (are_equal(argv[0], "LOGOUT"))
     {
-        logout(res);
+        logout_employee(res);
     }
     else if (are_equal(argv[0], "ACTIVATE_CUSTOMER"))
     {
