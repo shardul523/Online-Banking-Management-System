@@ -277,6 +277,31 @@ void handle_loan(Response *res, int loan_id, int action)
     snprintf(res->body, RES_BODY_SIZE - 1, "Loan %s Successfully", loan_status_names[loan.status]);
 }
 
+void view_assigned_loan_applications(Response *res)
+{
+    int fd = open(LOANS_FILE, O_RDONLY);
+    Loan curr_loan;
+    char curr_line[100];
+    strcpy(res->body, "There was an error while fetching loan applications");
+
+    if (fd == -1) return;
+
+    snprintf(res->body, RES_BODY_SIZE - 1, "LOAN ID\t LOAN TYPE\t CUSTOMER ID\t LOAN STATUS\n");
+
+    struct flock lock = set_lock(fd, SEEK_SET, 0, sizeof(Loan), 1);
+
+    while (read(fd, &curr_loan, sizeof(Loan)) > 0) {
+        unlock(fd, &lock);
+        if (curr_loan.employee_id == res->user.user_id) {
+            snprintf(curr_line, 99, "%-7d\t %-9s\t %-11d\t %-10s\n", curr_loan.loan_id, loan_type_names[curr_loan.type], 
+            curr_loan.customer_id, loan_status_names[curr_loan.status]);
+            strcat(res->body, curr_line);
+        }
+    }
+
+    
+}
+
 // MANAGER EMPLOYEE FUNCTIONS
 
 void activate_customers(Response *res, int customer_id)
@@ -392,6 +417,10 @@ void handle_regular_employee_requests(char **argv, Response *res)
     else if (are_equal(argv[0], "LOAN_ACTION"))
     {
         handle_loan(res, atoi(argv[1]), atoi(argv[2]));
+    }
+    else if (are_equal(argv[0], "VIEW_ASSIGNED_LOAN_APPLICATIONS"))
+    {
+        view_assigned_loan_applications(res);
     }
 }
 

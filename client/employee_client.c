@@ -139,6 +139,24 @@ void handle_loans(int sock_fd, Token* user)
 
     printf("\n%s\n", res.body);    
 }
+
+void view_assigned_loan_applications(int sock_fd, Token *user)
+{
+    Request req;
+    Response res;
+
+    req.argc = 1;
+    req.user = *user;
+
+    strcpy(req.arguments, "VIEW_ASSIGNED_LOAN_APPLICATIONS");
+
+    if (send(sock_fd, &req, sizeof(Request), 0) < 0)
+        return;
+    if (read(sock_fd, &res, sizeof(Response)) < 0)
+        return;
+
+    printf("\n%s\n", res.body);      
+}
 // MANAGER FUNCTIONS
 
 void activate_customer(int sock_fd, Token *user)
@@ -264,6 +282,9 @@ void regular_employee_handler(int sock_fd, Token *user)
             handle_loans(sock_fd, user);
             break;
 
+        case 4:
+            view_assigned_loan_applications(sock_fd, user);
+            break;
         case 7:
             logout(sock_fd, user);
             return;
