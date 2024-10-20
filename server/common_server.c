@@ -151,4 +151,15 @@ int update_loan(Loan *loan)
     return 0;
 }
 
+char* join_words(char** words, int c) 
+{
+    char *sentence = (char*) calloc(FEEDBACK_SIZE, sizeof(char));
+    
+    for (int i = 1; i <= c; i++) {
+        strcat(sentence, words[i]);
+    } 
+
+    return sentence;
+}
+
 #endif

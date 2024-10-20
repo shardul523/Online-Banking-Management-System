@@ -302,7 +302,27 @@ void apply_for_loan(Response *res, int loan_type, double amount)
     snprintf(res->body, MAX_ARGUMENT_SIZE - 1, "Loan Application was submitted successfully");
 }
 
-void handle_customer_requests(char **argv, Response *res)
+void give_feedback(Response *res, char** argv, int argc) 
+{
+    char *feedback = join_words(argv, argc - 1);
+    Customer cust;
+
+    if (get_customer(res->user.user_id, &cust) == -1) {
+        strcpy(res->body, "Could not submit feedback");
+        return;
+    }
+
+    strcpy(cust.feedback, feedback);
+
+    if (update_customer(&cust) == -1) {
+        strcpy(res->body, "Could not submit feedback");
+        return;
+    }
+
+    strcpy(res->body, "Feedback Submitted Successfully");
+}
+
+void handle_customer_requests(char **argv, Response *res, int argc)
 {
     if (strcmp(argv[0], "GET_BALANCE") == 0)
     {
@@ -324,6 +344,10 @@ void handle_customer_requests(char **argv, Response *res)
     else if (are_equal(argv[0], "LOAN"))
     {
         apply_for_loan(res, atoi(argv[1]), atof(argv[2]));
+    }
+    else if (are_equal(argv[0], "GIVE_FEEDBACK"))
+    {
+        give_feedback(res, argv, argc);
     }
     else if (strcmp(argv[0], "LOGOUT") == 0)
     {

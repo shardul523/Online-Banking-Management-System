@@ -373,7 +373,7 @@ void handle_manager_requests(char **argv, Response *res)
     }
 }
 
-void handle_employee_requests(char **argv, Response *res)
+void handle_employee_requests(char **argv, Response *res, int argc)
 {
     if (res->user.role == REGULAR)
         handle_regular_employee_requests(argv, res);

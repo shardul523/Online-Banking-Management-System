@@ -137,6 +137,25 @@ void apply_for_loan(int sock_fd, Token *user)
     printf("\n%s\n", res.body);
 }
 
+void give_feedback(int sock_fd, Token *user)
+{
+    Request req;
+    Response res;
+    char feedback[FEEDBACK_SIZE];
+
+    req.user = *user;
+    printf("Enter your feedback: \n");
+    fgets(feedback, FEEDBACK_SIZE, stdin);
+    req.argc = countWords(feedback) + 1;
+
+    snprintf(req.arguments, MAX_ARGUMENT_SIZE - 1, "GIVE_FEEDBACK %s", feedback);
+
+    if (send(sock_fd, &req, sizeof(Request), 0) < 0) return;
+    if (read(sock_fd, &res, sizeof(Response)) < 0) return;
+
+    printf("\n%s\n", res.body);
+}
+
 void customer_handler(int sock_fd, Token *user)
 {
     int choice;
@@ -146,6 +165,7 @@ void customer_handler(int sock_fd, Token *user)
         display_customer_menu();
         printf("\nEnter your choice: ");
         scanf("%d", &choice);
+        clearStdin();
 
         switch (choice)
         {
@@ -169,6 +189,10 @@ void customer_handler(int sock_fd, Token *user)
 
         case 6:
             apply_for_loan(sock_fd, user);
+            break;
+
+        case 7:
+            give_feedback(sock_fd, user);
             break;
 
         case 9:

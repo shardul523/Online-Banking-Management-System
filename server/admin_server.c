@@ -106,7 +106,7 @@ void modify_employee_details(Response *res, int employee_id, char *field, char *
     snprintf(res->body, MAX_ARGUMENT_SIZE - 1, "\nEMPLOYEE DETAILS MODIFIED\nNEW MODIFIED %s: %s\n", field, value);
 }
 
-void handle_admin_requests(char **argv, Response *res)
+void handle_admin_requests(char **argv, Response *res, int argc)
 {
     if (strcmp(argv[0], "LOGOUT") == 0)
     {

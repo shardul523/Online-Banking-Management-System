@@ -87,15 +87,15 @@ void handle_requests(int sock_fd)
             break;
 
         case CUSTOMER:
-            handle_customer_requests(argv, &res);
+            handle_customer_requests(argv, &res, req->argc);
             break;
 
         case EMPLOYEE:
-            handle_employee_requests(argv, &res);
+            handle_employee_requests(argv, &res, req->argc);
             break;
 
         case ADMIN:
-            handle_admin_requests(argv, &res);
+            handle_admin_requests(argv, &res, req->argc);
             break;
         default:
             snprintf(res.body, RES_BODY_SIZE - 1, "\nINVALID REQUEST\n");

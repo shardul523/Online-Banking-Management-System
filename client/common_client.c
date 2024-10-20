@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <arpa/inet.h>
 #include <string.h>
+#include <ctype.h>
 
 #include "../globals.h"
 
@@ -57,5 +58,27 @@ int logout(int socket_fd, Token *user)
 
     return 0;
 }
+
+int countWords(const char *str) {
+    int count = 0;
+    int inWord = 0;
+
+    while (*str) {
+        if (isspace(*str)) {
+            inWord = 0;  // End of a word
+        } else if (!inWord) {
+            inWord = 1;  // Start of a new word
+            count++;
+        }
+        str++;
+    }
+    return count;
+}
+
+void clearStdin() {
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF);  // Clear the input buffer
+}
+
 
 #endif
