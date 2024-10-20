@@ -28,7 +28,7 @@ int main()
         {MANAGER, 1, "emp1", "test1234"},
         {REGULAR, 2, "emp2", "test1234"}};
 
-    Admin admin = {1, "sanal", "test1234"};
+    Admin admin = {1, "sanal", "test1234", False};
 
     Record record = {3, 2, 1, 0};
 

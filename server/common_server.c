@@ -10,6 +10,25 @@
 
 #include "../globals.h"
 
+struct flock set_lock(int fd, short whence, int start, int len, int type)
+{
+    struct flock lock;
+    lock.l_type = type == 1 ? F_RDLCK : F_WRLCK;
+    lock.l_whence = whence;
+    lock.l_start = start;
+    lock.l_len = len;
+    lock.l_pid = getpid();
+
+    fcntl(fd, F_SETLKW, &lock);
+
+    return lock;
+}
+
+int unlock(int fd, struct flock *lock)
+{
+    return fcntl(fd, F_SETLK, lock);
+}
+
 void logout(Response *res)
 {
     res->user.user_id = -1;
@@ -40,8 +59,17 @@ Record *get_record()
 
     Record *rec = (Record *)malloc(sizeof(Record));
 
+    struct flock lock;
+
+    lock = set_lock(record_fd, SEEK_SET, 0, 0, 1);
+
     if (read(record_fd, rec, sizeof(Record)) < 0)
+    {
+        unlock(record_fd, &lock);
         return NULL;
+    }
+
+    unlock(record_fd, &lock);
 
     return rec;
 }
@@ -55,8 +83,15 @@ Bool update_record(int cust_c, int emp_c, int adm_c, int loan_c)
     if (record_fd == -1)
         return False;
 
+    struct flock lock = set_lock(record_fd, SEEK_SET, 0, 0, 0);
+
     if (write(record_fd, &rec, sizeof(Record)) < 0)
+    {
+        unlock(record_fd, &lock);
         return False;
+    }
+
+    unlock(record_fd, &lock);
 
     return True;
 }
@@ -82,8 +117,15 @@ int get_loan(int loan_id, Loan *loan)
 
     lseek(fd, (loan_id - 1) * sizeof(Loan), SEEK_SET);
 
+    struct flock lock = set_lock(fd, SEEK_CUR, 0, sizeof(Loan), 1);
+
     if (read(fd, loan, sizeof(Loan)) <= 0)
+    {
+        unlock(fd, &lock);
         return -1;
+    }
+
+    unlock(fd, &lock);
 
     return 0;
 }
@@ -96,9 +138,15 @@ int update_loan(Loan *loan)
         return -1;
 
     lseek(fd, (loan->loan_id - 1) * sizeof(Loan), SEEK_SET);
+    struct flock lock = set_lock(fd, SEEK_CUR, 0, sizeof(Loan), 0);
 
     if (write(fd, loan, sizeof(Loan)) <= 0)
+    {
+        unlock(fd, &lock);
         return -1;
+    }
+
+    unlock(fd, &lock);
 
     return 0;
 }

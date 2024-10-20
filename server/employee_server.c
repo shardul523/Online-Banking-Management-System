@@ -13,8 +13,12 @@ int get_employee(int user_id, Employee *emp)
 
     lseek(fd, (user_id - 1) * sizeof(Employee), SEEK_SET);
 
+    struct flock lock = set_lock(fd, SEEK_CUR, 0, sizeof(Employee), 1);
+
     if (read(fd, emp, sizeof(Employee)))
         found = True;
+
+    unlock(fd, &lock);
 
     close(fd);
     if (found)
@@ -32,11 +36,16 @@ int update_employee(Employee *emp)
 
     lseek(fd, (emp->employee_id - 1) * sizeof(Employee), SEEK_SET);
 
+    struct flock lock = set_lock(fd, SEEK_CUR, 0, sizeof(Employee), 1);
+
     if (write(fd, emp, sizeof(Employee)) == 0)
     {
+        unlock(fd, &lock);
         close(fd);
         return -1;
     }
+
+    unlock(fd, &lock);
 
     close(fd);
 
@@ -51,11 +60,17 @@ int find_employee(char *username, Employee *emp)
     if (fd == -1)
         return -1;
 
+    struct flock lock = set_lock(fd, SEEK_SET, 0, sizeof(Employee), 1);
+
     while ((bytes_read = read(fd, emp, sizeof(Employee))) > 0)
     {
+        unlock(fd, &lock);
         if (are_equal(emp->username, username))
             break;
+        lock = set_lock(fd, SEEK_CUR, 0, sizeof(Employee), 0);
     }
+
+    close(fd);
 
     if (bytes_read == 0)
         return -1;
@@ -160,6 +175,8 @@ void add_new_customer(Response *res, char *username, char *password, double bala
 
     int customer_fd = open(CUSTOMERS_FILE, O_WRONLY);
 
+    struct flock lock = set_lock(customer_fd, SEEK_SET, 0, 0, 0);
+
     int new_uid = record->customers_count + 1;
 
     if (!update_record(new_uid, record->employees_count, record->admins_count, record->loans_count))
@@ -186,6 +203,8 @@ void add_new_customer(Response *res, char *username, char *password, double bala
         strcpy(res->body, "Could not create the user\n");
         return;
     }
+
+    unlock(customer_fd, &lock);
 
     strcpy(res->body, "Customer Account Created Successfully\n");
 

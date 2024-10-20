@@ -9,22 +9,14 @@ int get_customer(int user_id, Customer *cust)
     if (fd == -1)
         return -1;
 
-    // while (read(fd, cust, sizeof(Customer)) > 0)
-    // {
-    //     if (cust->customer_id != user->user_id) continue;
-    //     found = True;
-    //     break;
-    // }
-
     lseek(fd, (user_id - 1) * sizeof(Customer), SEEK_SET);
+
+    struct flock lock = set_lock(fd, SEEK_CUR, 0, sizeof(Customer), 1);
 
     if (read(fd, cust, sizeof(Customer)))
         found = True;
 
-    // printf("Customer ID: %d\n", cust->customer_id);
-    // printf("Customer username %s\n", cust->username);
-    // printf("Customer Balance: %lf\n", cust->balance);
-
+    unlock(fd, &lock);
     close(fd);
     if (found)
         return 0;
@@ -36,14 +28,19 @@ int find_customer(char *username, Customer *cust)
 {
     int fd = open(CUSTOMERS_FILE, O_RDONLY);
     ssize_t bytes_read;
+    struct flock lock;
 
     if (fd == -1)
         return -1;
 
+    set_lock(fd, SEEK_SET, 0, sizeof(Customer), 1);
+
     while ((bytes_read = read(fd, cust, sizeof(Customer))) > 0)
     {
+        unlock(fd, &lock);
         if (are_equal(username, cust->username))
             break;
+        lock = set_lock(fd, SEEK_CUR, 0, sizeof(Customer), 1);
     }
 
     close(fd);
@@ -63,11 +60,16 @@ int update_customer(Customer *cust)
 
     lseek(fd, (cust->customer_id - 1) * sizeof(Customer), SEEK_SET);
 
+    struct flock lock = set_lock(fd, SEEK_CUR, 0, sizeof(Customer), 0);
+
     if (write(fd, cust, sizeof(Customer)) == 0)
     {
+        unlock(fd, &lock);
         close(fd);
         return -1;
     }
+
+    unlock(fd, &lock);
 
     close(fd);
 
@@ -166,6 +168,7 @@ int add_loan(Loan *loan)
     if (fd == -1)
         return -1;
 
+    struct flock lock = set_lock(fd, SEEK_SET, 0, 0, 1);
     record->loans_count++;
 
     if (!update_record(record->customers_count, record->employees_count, record->admins_count, record->loans_count))
@@ -178,9 +181,12 @@ int add_loan(Loan *loan)
 
     if (write(fd, loan, sizeof(Loan)) <= 0)
     {
+        unlock(fd, &lock);
         close(fd);
         return -1;
     }
+
+    unlock(fd, &lock);
 
     return 0;
 }
