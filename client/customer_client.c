@@ -156,6 +156,26 @@ void give_feedback(int sock_fd, Token *user)
     printf("\n%s\n", res.body);
 }
 
+void change_password(int sock_fd, Token *user)
+{
+    Request req;
+    Response res;
+    char new_pass[PASSWORD_SIZE];
+
+    req.user = *user;
+    req.argc = 2;
+
+    printf("Enter the new password: ");
+    scanf("%s", new_pass);
+
+    snprintf(req.arguments, MAX_ARGUMENT_SIZE - 1, "PASSWORD_CHANGE %s", new_pass);
+
+    if (send(sock_fd, &req, sizeof(Request), 0) < 0) return;
+    if (read(sock_fd, &res, sizeof(Response)) < 0) return;
+
+    printf("\n%s\n", res.body);
+}
+
 void customer_handler(int sock_fd, Token *user)
 {
     int choice;
@@ -193,6 +213,10 @@ void customer_handler(int sock_fd, Token *user)
 
         case 7:
             give_feedback(sock_fd, user);
+            break;
+
+        case 8:
+            change_password(sock_fd, user);
             break;
 
         case 9:

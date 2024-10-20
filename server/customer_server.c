@@ -322,6 +322,27 @@ void give_feedback(Response *res, char** argv, int argc)
     strcpy(res->body, "Feedback Submitted Successfully");
 }
 
+void change_password(Response *res, char* new_password)
+{
+    Customer cust;
+
+    if (get_customer(res->user.user_id, &cust) == -1) 
+    {
+        strcpy(res->body, "Could not change the password");
+        return;
+    }
+
+    strcpy(cust.password, new_password);
+
+    if (update_customer(&cust) == -1) 
+    {
+        strcpy(res->body, "Could not change the password");
+        return;
+    }
+
+    strcpy(res->body, "Password Changed Successfully");
+}
+
 void handle_customer_requests(char **argv, Response *res, int argc)
 {
     if (strcmp(argv[0], "GET_BALANCE") == 0)
@@ -348,6 +369,10 @@ void handle_customer_requests(char **argv, Response *res, int argc)
     else if (are_equal(argv[0], "GIVE_FEEDBACK"))
     {
         give_feedback(res, argv, argc);
+    }
+    else if (are_equal(argv[0], "PASSWORD_CHANGE"))
+    {
+        change_password(res, argv[1]);
     }
     else if (strcmp(argv[0], "LOGOUT") == 0)
     {

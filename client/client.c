@@ -42,9 +42,15 @@ int main()
     printf("1. CUSTOMER\n");
     printf("2. EMPLOYEE\n");
     printf("3. ADMIN\n");
+    printf("Press any other key to exit\n");
 
     printf("Enter user type: ");
     scanf("%d", &user_type);
+
+    if (user_type < 1 || user_type > 3) {
+        close(socket_fd);
+        return 0;
+    }
 
     printf("Username: ");
     scanf("%s", username);
