@@ -148,6 +148,7 @@ void admin_handler(int sock_fd, Token *user)
         int choice;
 
         printf("Hello, %s\n", user->username);
+        printf("Admin ID: %d\n", user->user_id);
         display_admin_menu();
 
         printf("Enter your choice: ");

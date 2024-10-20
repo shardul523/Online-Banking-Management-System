@@ -182,6 +182,8 @@ void customer_handler(int sock_fd, Token *user)
 
     while (1)
     {
+        printf("Hello, %s\n", user->username);
+        pritnf("Customer ID: %d\n", user->user_id);
         display_customer_menu();
         printf("\nEnter your choice: ");
         scanf("%d", &choice);

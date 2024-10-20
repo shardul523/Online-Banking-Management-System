@@ -306,6 +306,7 @@ void regular_employee_handler(int sock_fd, Token *user)
         int choice;
 
         printf("Hello, %s\n", user->username);
+        pritnf("Employee ID: %d\n", user->user_id);
         display_employee_menu();
 
         printf("Enter your choice: ");
