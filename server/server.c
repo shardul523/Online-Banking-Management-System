@@ -51,51 +51,64 @@ ServerSocket setup_server()
     return server;
 }
 
-void handle_requests(int sock_fd, Request *req)
+void handle_requests(int sock_fd)
 {
-    char *argv[req->argc];
-    Response res;
+    while (1) {
+        Request *req = (Request*) malloc(sizeof(Request));
+        Response res;
 
-    extract_args(req->argc, argv, req->arguments);
+        if (read(sock_fd, req, sizeof(Request)) <= 0) {
+            perror("Request could not be handled");
+            return;
+        } 
 
-    // printf("User Type: %d\n", req->user.user_type);
-    // printf("Argument 0: %s\n", argv[0]);
+        char *argv[req->argc];
 
-    res.user = req->user;
+        extract_args(req->argc, argv, req->arguments);
 
-    switch (req->user.user_type)
-    {
-    case NONE:
-        if (strcmp(argv[0], "LOGIN") != 0)
+        // printf("User Type: %d\n", req->user.user_type);
+        // printf("Argument 0: %s\n", argv[0]);
+
+        res.user = req->user;
+
+        switch (req->user.user_type)
+        {
+        case NONE:
+            if (strcmp(argv[0], "LOGIN") != 0)
+                break;
+            if (strcmp(argv[1], "CUSTOMER") == 0)
+                login_customer(argv[2], argv[3], &res);
+            else if (strcmp(argv[1], "EMPLOYEE") == 0)
+                login_employee(argv[2], argv[3], &res);
+            else if (strcmp(argv[1], "ADMIN") == 0)
+                login_admin(argv[2], argv[3], &res);
+            else
+                snprintf(res.body, RES_BODY_SIZE - 1, "\nINVALID REQUEST\n");
             break;
-        if (strcmp(argv[1], "CUSTOMER") == 0)
-            login_customer(argv[2], argv[3], &res);
-        else if (strcmp(argv[1], "EMPLOYEE") == 0)
-            login_employee(argv[2], argv[3], &res);
-        else if (strcmp(argv[1], "ADMIN") == 0)
-            login_admin(argv[2], argv[3], &res);
-        else
+
+        case CUSTOMER:
+            handle_customer_requests(argv, &res);
+            break;
+
+        case EMPLOYEE:
+            handle_employee_requests(argv, &res);
+            break;
+
+        case ADMIN:
+            handle_admin_requests(argv, &res);
+            break;
+        default:
             snprintf(res.body, RES_BODY_SIZE - 1, "\nINVALID REQUEST\n");
-        break;
+        }
 
-    case CUSTOMER:
-        handle_customer_requests(argv, &res);
-        break;
+        if (send(sock_fd, &res, sizeof(Response), 0) < 0)
+        {
+            perror("Could not send the response to the request");
+        }
 
-    case EMPLOYEE:
-        handle_employee_requests(argv, &res);
-        break;
+        free(req);
 
-    case ADMIN:
-        handle_admin_requests(argv, &res);
-        break;
-    default:
-        snprintf(res.body, RES_BODY_SIZE - 1, "\nINVALID REQUEST\n");
-    }
-
-    if (send(sock_fd, &res, sizeof(Response), 0) < 0)
-    {
-        perror("Could not send the response to the request");
+        if (res.user.user_id == -1) break;
     }
 }
 
@@ -111,25 +124,42 @@ int main()
     }
 
     // Accept a client connection
-    if ((new_socket = accept(server.server_fd, (struct sockaddr *)&server.address, (socklen_t *)&addrlen)) < 0)
-    {
-        perror("Accept failed");
-        close(server.server_fd);
-        exit(EXIT_FAILURE);
+    // if ((new_socket = accept(server.server_fd, (struct sockaddr *)&server.address, (socklen_t *)&addrlen)) < 0)
+    // {
+    //     perror("Accept failed");
+    //     close(server.server_fd);
+    //     exit(EXIT_FAILURE);
+    // }
+
+    // Request req;
+    // Response res;
+
+    // // Receive and respond to multiple messages
+    // for (int i = 0; i < 10; i++)
+    // {
+    //     // Receive a message
+    //     if (read(new_socket, &req, sizeof(Request)) > 0)
+    //         handle_requests(new_socket, &req);
+    // }
+
+    while (1) {
+
+        if ((new_socket = accept(server.server_fd, (struct sockaddr *)&server.address, (socklen_t *)&addrlen)) < 0)
+        {
+            perror("Accept failed");
+            close(server.server_fd);
+            exit(EXIT_FAILURE);
+        }
+
+        if (!fork()) {
+            close(server.server_fd);
+            handle_requests(new_socket);
+            exit(EXIT_SUCCESS);
+        } else {
+            close(new_socket);
+        }
     }
 
-    Request req;
-    Response res;
-
-    // Receive and respond to multiple messages
-    for (int i = 0; i < 10; i++)
-    {
-        // Receive a message
-        if (read(new_socket, &req, sizeof(Request)) > 0)
-            handle_requests(new_socket, &req);
-    }
-
-    close(new_socket);
     close(server.server_fd);
     printf("Server terminated.\n");
 
