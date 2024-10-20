@@ -78,6 +78,19 @@ int find_employee(char *username, Employee *emp)
     return 0;
 }
 
+int approve_loan(Loan *loan)
+{
+    Customer cust;
+
+    if (get_customer(loan->customer_id, &cust) == -1) return -1;
+
+    cust.balance += loan->amount;
+
+    if (update_customer(&cust) == -1) return -1;
+
+    return 0;
+}
+
 void login_employee(char *username, char *password, Response *res)
 {
     Employee e;
@@ -235,6 +248,35 @@ void modify_customer_details(Response *res, int customer_id, char *field, char *
     snprintf(res->body, MAX_ARGUMENT_SIZE - 1, "\nCUSTOMER DETAILS MODIFIED\nNEW MODIFIED %s: %s\n", field, value);
 }
 
+void handle_loan(Response *res, int loan_id, int action)
+{
+    Loan loan;
+
+    if (get_loan(loan_id, &loan) == -1) 
+    {
+        strcpy(res->body, "Loan action could not be completed. Please try again.");
+        return;
+    }
+
+    if (action == 1) {
+        loan.status = GRANTED;
+        if (approve_loan(&loan) == -1) {
+            strcpy(res->body, "Loan could not be granted successfully");
+            return;
+        }
+    }
+    else if (action == 2)
+        loan.status = REJECTED;
+
+    if (update_loan(&loan) == -1) 
+    {    
+        strcpy(res->body, "Loan action could not be completed. Please try again.");
+        return;
+    }
+
+    snprintf(res->body, RES_BODY_SIZE - 1, "Loan %s Successfully", loan_status_names[loan.status]);
+}
+
 // MANAGER EMPLOYEE FUNCTIONS
 
 void activate_customers(Response *res, int customer_id)
@@ -346,6 +388,10 @@ void handle_regular_employee_requests(char **argv, Response *res)
     else if (are_equal(argv[0], "MODIFY"))
     {
         modify_customer_details(res, atoi(argv[1]), argv[2], argv[3]);
+    }
+    else if (are_equal(argv[0], "LOAN_ACTION"))
+    {
+        handle_loan(res, atoi(argv[1]), atoi(argv[2]));
     }
 }
 

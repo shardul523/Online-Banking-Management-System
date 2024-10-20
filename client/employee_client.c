@@ -106,6 +106,39 @@ void modify_customer_details(int sock_fd, Token *user)
     printf("\n%s\n", res.body);
 }
 
+void handle_loans(int sock_fd, Token* user)
+{
+    Request req;
+    Response res;
+    int loan_id;
+    int choice;
+
+    printf("Enter the Loan ID of the loan: ");
+    scanf("%d", &loan_id);
+
+    printf("\nWhat action would you like to take ?\n");
+    printf("\n1. APPROVE");
+    printf("\n2. REJECT");
+    printf("\nEnter your choice: ");
+    scanf("%d", &choice);
+
+    if (choice < 1 || choice > 2) {
+        printf("Invalid choice\n");
+        return;
+    }
+
+    req.argc = 3;
+    req.user = *user;
+
+    snprintf(req.arguments, MAX_ARGUMENT_SIZE - 1, "LOAN_ACTION %d %d", loan_id, choice);
+
+    if (send(sock_fd, &req, sizeof(Request), 0) < 0)
+        return;
+    if (read(sock_fd, &res, sizeof(Response)) < 0)
+        return;
+
+    printf("\n%s\n", res.body);    
+}
 // MANAGER FUNCTIONS
 
 void activate_customer(int sock_fd, Token *user)
@@ -225,6 +258,10 @@ void regular_employee_handler(int sock_fd, Token *user)
 
         case 2:
             modify_customer_details(sock_fd, user);
+            break;
+
+        case 3:
+            handle_loans(sock_fd, user);
             break;
 
         case 7:
