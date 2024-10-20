@@ -66,4 +66,11 @@ Bool are_equal(char *str1, char *str2)
     return strcmp(str1, str2) == 0;
 }
 
+void print_customer(Customer *cust)
+{
+    printf("\nCustomer ID: %d\n", cust->customer_id);
+    printf("Customer Username: %s\n", cust->username);
+    printf("Is Customer Active: %d\n", cust->is_active);
+}
+
 #endif

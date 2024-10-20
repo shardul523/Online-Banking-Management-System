@@ -58,7 +58,6 @@ void add_new_customer(int sock_fd, Token *user)
     printf("%s\n", res.body);
 }
 
-// MODIFY customer_id field value
 void modify_customer_details(int sock_fd, Token *user)
 {
     Request req;
@@ -97,6 +96,50 @@ void modify_customer_details(int sock_fd, Token *user)
 
     req.user = *user;
     req.argc = 4;
+
+    if (send(sock_fd, &req, sizeof(Request), 0) < 0)
+        return;
+    if (read(sock_fd, &res, sizeof(Response)) < 0)
+        return;
+
+    printf("\n%s\n", res.body);
+}
+
+// MANAGER FUNCTIONS
+
+void activate_customer(int sock_fd, Token *user)
+{
+    int customer_id;
+    Request req;
+    Response res;
+
+    printf("\nEnter the ID of the customer to be activated: ");
+    scanf("%d", &customer_id);
+
+    req.user = *user;
+    req.argc = 2;
+    snprintf(req.arguments, MAX_ARGUMENT_SIZE - 1, "ACTIVATE_CUSTOMER %d", customer_id);
+
+    if (send(sock_fd, &req, sizeof(Request), 0) < 0)
+        return;
+    if (read(sock_fd, &res, sizeof(Response)) < 0)
+        return;
+
+    printf("\n%s\n", res.body);
+}
+
+void deactivate_customer(int sock_fd, Token *user)
+{
+    int customer_id;
+    Request req;
+    Response res;
+
+    printf("\nEnter the ID of the customer to be deactivated: ");
+    scanf("%d", &customer_id);
+
+    req.user = *user;
+    req.argc = 2;
+    snprintf(req.arguments, MAX_ARGUMENT_SIZE - 1, "DEACTIVATE_CUSTOMER %d", customer_id);
 
     if (send(sock_fd, &req, sizeof(Request), 0) < 0)
         return;
@@ -153,7 +196,18 @@ void manager_employee_handler(int sock_fd, Token *user)
         switch (choice)
         {
         case 1:
-            printf("Activate / Deactivate Customer Accounts\n");
+            int c;
+            printf("\n1. Activate Customer");
+            printf("\n2. Deactivate Customer\n");
+            printf("\nEnter your choice: ");
+            scanf("%d", &c);
+
+            if (c == 1)
+                activate_customer(sock_fd, user);
+            else if (c == 2)
+                deactivate_customer(sock_fd, user);
+            else
+                printf("INVALID CHOICE\n");
             break;
 
         case 5:
