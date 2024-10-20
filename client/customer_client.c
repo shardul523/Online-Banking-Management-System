@@ -221,10 +221,12 @@ void customer_handler(int sock_fd, Token *user)
 
         case 9:
             logout(sock_fd, user);
-            return;
+            break;
         default:
             printf("Operation Not Found\n");
             break;
         }
+
+        if (user->user_id == -1) return;
     }
 }

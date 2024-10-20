@@ -334,11 +334,13 @@ void regular_employee_handler(int sock_fd, Token *user)
             break;
         case 7:
             logout(sock_fd, user);
-            return;
+            break;
 
         default:
             return;
         }
+
+        if (user->user_id == -1) return;
     }
 }
 
@@ -389,11 +391,13 @@ void manager_employee_handler(int sock_fd, Token *user)
 
         case 6:
             logout(sock_fd, user);
-            return;
+            break;
 
         default:
             return;
         }
+
+        if (user->user_id == -1) return;
     }
 }
 

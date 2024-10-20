@@ -94,6 +94,26 @@ void modify_detalis(int sock_fd, Token *user, UserType user_type)
     printf("\n%s\n", res.body);
 }
 
+void change_admin_password(int sock_fd, Token* user)
+{
+    Request req;
+    Response res;
+    char new_pass[PASSWORD_SIZE];
+
+    req.user = *user;
+    req.argc = 2;
+
+    printf("Enter the new password: ");
+    scanf("%s", new_pass);
+
+    snprintf(req.arguments, MAX_ARGUMENT_SIZE - 1, "PASSWORD_CHANGE %s", new_pass);
+
+    if (send(sock_fd, &req, sizeof(Request), 0) < 0) return;
+    if (read(sock_fd, &res, sizeof(Response)) < 0) return;
+
+    printf("\n%s\n", res.body);
+}
+
 void admin_handler(int sock_fd, Token *user)
 {
     while (1)
@@ -123,10 +143,13 @@ void admin_handler(int sock_fd, Token *user)
 
         case 5:
             logout(sock_fd, user);
-            return;
+            break;
 
         default:
             return;
         }
+
+        if (user->user_id == -1) return;
+
     }
 }
