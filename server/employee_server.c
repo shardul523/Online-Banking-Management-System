@@ -196,9 +196,9 @@ void add_new_customer(Response *res, char *username, char *password, double bala
 
     struct flock lock = set_lock(customer_fd, SEEK_SET, 0, 0, 0);
 
-    int new_uid = record->customers_count + 1;
+    record->customers_count++;
 
-    if (!update_record(new_uid, record->employees_count, record->admins_count, record->loans_count))
+    if (!update_record(record))
     {
         strcpy(res->body, "Could not write to the records file\n");
         return;
@@ -211,7 +211,7 @@ void add_new_customer(Response *res, char *username, char *password, double bala
     }
 
     Customer new_cust;
-    new_cust.customer_id = new_uid;
+    new_cust.customer_id = record->customers_count;
     new_cust.balance = balance;
     new_cust.in_session = False;
     new_cust.is_active = True;
@@ -220,7 +220,8 @@ void add_new_customer(Response *res, char *username, char *password, double bala
 
     if (write(customer_fd, &new_cust, sizeof(Customer)) < 0)
     {
-        update_record(record->customers_count, record->employees_count, record->admins_count, record->loans_count);
+        record->customers_count--;
+        update_record(record);
         strcpy(res->body, "Could not create the user\n");
         return;
     }
@@ -466,6 +467,10 @@ void handle_regular_employee_requests(char **argv, Response *res)
     else if (are_equal(argv[0], "PASSWORD_CHANGE"))
     {
         change_employee_password(res, argv[1]);
+    }
+    else if (are_equal(argv[0], "VIEW_CUSTOMER_TRANSACTIONS"))
+    {
+        send_transactions_by_id(atoi(argv[1]), res);
     }
 }
 

@@ -180,6 +180,29 @@ void view_assigned_loan_applications(int sock_fd, Token *user)
 
     printf("\n%s\n", res.body);
 }
+
+void view_customer_transactions(int sock_fd, Token *user)
+{
+    Request req;
+    Response res;
+    int customer_id;
+
+    req.argc = 2;
+    req.user = *user;
+
+    printf("\nCustomer ID: ");
+    scanf("%d", &customer_id);
+
+    snprintf(req.arguments, MAX_ARGUMENT_SIZE - 1, "VIEW_CUSTOMER_TRANSACTIONS %d", customer_id);
+
+    if (send(sock_fd, &req, sizeof(Request), 0) < 0)
+        return;
+    if (read(sock_fd, &res, sizeof(Response)) < 0)
+        return;
+
+    printf("\n%s\n", res.body);
+}
+
 // MANAGER FUNCTIONS
 
 void activate_customer(int sock_fd, Token *user)
@@ -331,6 +354,10 @@ void regular_employee_handler(int sock_fd, Token *user)
 
         case 4:
             view_assigned_loan_applications(sock_fd, user);
+            break;
+
+        case 5:
+            view_customer_transactions(sock_fd, user);
             break;
 
         case 6:

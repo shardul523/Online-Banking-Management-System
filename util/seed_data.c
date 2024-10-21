@@ -11,6 +11,7 @@ int main()
     int customers_fd = open(CUSTOMERS_FILE, O_CREAT | O_RDWR, 0766);
     int records_fd = open(RECORDS_FILE, O_CREAT | O_WRONLY, 0666);
     int admin_fd = open(ADMIN_FILE, O_CREAT | O_WRONLY, 0666);
+    int transactions_fd = open(TRANSACTIONS_FILE, O_CREAT | O_WRONLY, 0666);
 
     if (customers_fd == -1 || employees_fd == -1 || admin_fd == -1)
     {
@@ -30,7 +31,12 @@ int main()
 
     Admin admin = {1, "sanal", "test1234", False};
 
-    Record record = {3, 2, 1, 0};
+    Transaction transactions[] = {
+        {1, 1, 2, 50, time(NULL)},
+        {2, 2, 1, 100, time(NULL)}
+    };
+
+    Record record = {3, 2, 1, 0, 2};
 
     if (write(customers_fd, customers, sizeof(customers)) <= 0)
     {
@@ -41,9 +47,11 @@ int main()
     write(employees_fd, &employees, sizeof(employees));
     write(admin_fd, &admin, sizeof(admin));
     write(records_fd, &record, sizeof(Record));
+    write(transactions_fd, &transactions, sizeof(transactions));
 
     close(customers_fd);
     close(employees_fd);
     close(admin_fd);
     close(records_fd);
+    close(transactions_fd);
 }

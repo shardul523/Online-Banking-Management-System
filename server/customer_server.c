@@ -171,7 +171,7 @@ int add_loan(Loan *loan)
     struct flock lock = set_lock(fd, SEEK_SET, 0, 0, 1);
     record->loans_count++;
 
-    if (!update_record(record->customers_count, record->employees_count, record->admins_count, record->loans_count))
+    if (!update_record(record))
     {
         close(fd);
         return -1;
@@ -228,6 +228,8 @@ void withdraw_money(Response *res, double amount)
         return;
     }
 
+    add_transaction(res->user.user_id, -1, amount);
+
     snprintf(res->body, MAX_ARGUMENT_SIZE - 1, "Withdrawn amount %.2lf\nNew Balance: %.2lf", amount, cust.balance);
 }
 
@@ -248,6 +250,8 @@ void deposit_money(Response *res, double amount)
         strcpy(res->body, "Could not withdraw the money");
         return;
     }
+
+    add_transaction(-1, res->user.user_id, amount);
 
     snprintf(res->body, MAX_ARGUMENT_SIZE - 1, "Deposited amount %.2lf\nNew Balance: %.2lf", amount, cust.balance);
 }
@@ -279,6 +283,8 @@ void transfer_money(Response *res, char *beneficiary_name, double amount)
 
     update_customer(&transferee);
     update_customer(&beneficiary);
+
+    add_transaction(transferee.customer_id, beneficiary.customer_id, amount);
 
     snprintf(res->body, MAX_ARGUMENT_SIZE - 1, "\nAmount %.2lf transferred from %s to %s\nUpdated Balance: %.2lf\n", amount, transferee.username, beneficiary.username, transferee.balance);
 }
@@ -373,6 +379,10 @@ void handle_customer_requests(char **argv, Response *res, int argc)
     else if (are_equal(argv[0], "PASSWORD_CHANGE"))
     {
         change_password(res, argv[1]);
+    }
+    else if (are_equal(argv[0], "GET_TRANSACTIONS"))
+    {
+        send_transactions_by_id(res->user.user_id, res);
     }
     else if (strcmp(argv[0], "LOGOUT") == 0)
     {

@@ -1,11 +1,13 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
+#include <time.h>
 
 #define CUSTOMERS_FILE "../data/CUSTOMERS_DB"
 #define EMPLOYEES_FILE "../data/EMPLOYEES_DB"
 #define ADMIN_FILE "../data/ADMIN_DB"
 #define RECORDS_FILE "../data/RECORDS_DB"
 #define LOANS_FILE "../data/LOANS_DB"
+#define TRANSACTIONS_FILE "../data/TRANSACTIONS_DB"
 #define USERNAME_SIZE 30
 #define PASSWORD_SIZE 15
 #define FEEDBACK_SIZE 300
@@ -113,11 +115,23 @@ typedef struct
     int employees_count;
     int admins_count;
     int loans_count;
+    long long transactions_count;
 } Record;
+
+typedef struct {
+    int transaction_id;
+    int sender_id;
+    int receiver_id;
+    double amount;
+    time_t time;
+} Transaction;
+
 
 char *loan_type_names[] = {
     "", "PERSONAL", "EDUCATION", "BUSINESS"};
 
 char *loan_status_names[] = {"", "PENDING", "IN REVIEW", "GRANTED", "REJECTED"};
+
+char *transaction_type_names[] = {"NONE", "WITHDRAW", "DEPOSIT"};
 
 #endif

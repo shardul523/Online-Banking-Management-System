@@ -183,6 +183,24 @@ void change_password(int sock_fd, Token *user)
     printf("\n%s\n", res.body);
 }
 
+void view_transaction_history(int sock_fd, Token *user)
+{
+    Request req;
+    Response res;
+
+    req.user = *user;
+    req.argc = 1;
+    strcpy(req.arguments, "GET_TRANSACTIONS");
+
+    if (send(sock_fd, &req, sizeof(Request), 0) < 0)
+        return;
+
+    if (read(sock_fd, &res, sizeof(Response)) < 0)
+        return;
+
+    printf("\n%s\n", res.body);
+}
+
 void customer_handler(int sock_fd, Token *user)
 {
     int choice;
@@ -199,7 +217,6 @@ void customer_handler(int sock_fd, Token *user)
         switch (choice)
         {
         case 1:
-            // printf("Get customer balance\n");
             if (view_account_balance(sock_fd, user) == -1)
                 printf("Please try again later!\n");
             break;
@@ -214,6 +231,10 @@ void customer_handler(int sock_fd, Token *user)
 
         case 4:
             transfer_money(sock_fd, user);
+            break;
+
+        case 5:
+            view_transaction_history(sock_fd, user);
             break;
 
         case 6:

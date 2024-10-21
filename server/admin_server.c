@@ -179,9 +179,9 @@ void add_new_employee(Response *res, char *username, char *password)
 
     struct flock lock = set_lock(fd, SEEK_SET, 0, 0, 0);
 
-    int new_uid = record->employees_count + 1;
+    record->employees_count++;
 
-    if (!update_record(record->customers_count, new_uid, record->admins_count, record->loans_count))
+    if (!update_record(record))
     {
         strcpy(res->body, "Could not write to the records file\n");
         return;
@@ -194,7 +194,7 @@ void add_new_employee(Response *res, char *username, char *password)
     }
 
     Employee new_emp;
-    new_emp.employee_id = new_uid;
+    new_emp.employee_id = record->employees_count;
     new_emp.role = REGULAR;
     new_emp.in_session = False;
     strcpy(new_emp.username, username);
@@ -202,7 +202,8 @@ void add_new_employee(Response *res, char *username, char *password)
 
     if (write(fd, &new_emp, sizeof(Employee)) < 0)
     {
-        update_record(record->customers_count, record->employees_count, record->admins_count, record->loans_count);
+        record->employees_count--;
+        update_record(record);
         strcpy(res->body, "Could not create the employee\n");
         return;
     }
