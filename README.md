@@ -3,8 +3,4 @@
 ## Online Banking Management System
 
 ### Taks remaining -
-
-- Implement Account Creation
-- Implement Customer Functions
-- Implement Employee Functions
-- Implement Admin Functions
+- None at the moment
