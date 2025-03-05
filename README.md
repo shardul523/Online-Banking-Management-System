@@ -1,4 +1,4 @@
-# CS-513 System Software – Mini Project
+# CS-513 System Software – Project
 
 ## Online Banking Management System
 
